@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from .parsers import GithubRequestEventParser
 
 
 class HookView(View):
@@ -14,5 +15,7 @@ class HookView(View):
         return HttpResponse('GET')
 
     def post(self, request):
+        event = GithubRequestEventParser()
+        event.parse(request)
         print request.body
-        return HttpResponse(request.body)
+        return HttpResponse("OK")
