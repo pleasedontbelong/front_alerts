@@ -1,4 +1,5 @@
 import json
+import slack_hook
 
 
 class GithubEvent(object):
@@ -13,7 +14,7 @@ class GithubEvent(object):
             self.send_to_slack(self.get_slack_message(payload))
 
     def send_to_slack(self, message):
-        print "SEND TO SLACK", message
+        slack_hook.post(message)
 
 
 class Issues(GithubEvent):

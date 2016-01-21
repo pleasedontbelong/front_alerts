@@ -115,3 +115,5 @@ STATICFILES_DIRS = (
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK', None)

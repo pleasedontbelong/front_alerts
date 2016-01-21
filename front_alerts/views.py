@@ -17,5 +17,4 @@ class HookView(View):
     def post(self, request):
         event = GithubRequestEventParser()
         event.parse(request)
-        print request.body
         return HttpResponse("OK")
