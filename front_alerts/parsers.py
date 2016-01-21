@@ -1,44 +1,72 @@
 import json
-import slack_hook
+import slack
+import github
+from .constants import FRONTEND_LABELS
 
 
 class GithubEvent(object):
-    FRONTEND_LABELS = ['comp:frontend']
 
-    def has_front_label(self, payload):
-        labels = self.get_labels(payload)
-        return any([label for label in labels if label in self.FRONTEND_LABELS])
+    def should_alert(self, payload):
+        """
+        Check if we should send an alert to slack
+        """
+        return False
+
+    def get_content(self, payload):
+        return ""
+
+    def get_attachments(self, payload):
+        return None
 
     def to_slack(self, payload):
-        if self.has_front_label(payload):
-            self.send_to_slack(self.get_slack_message(payload))
-
-    def send_to_slack(self, message):
-        slack_hook.post(message)
+        if self.should_alert(payload):
+            slack.post(content=self.get_content(payload), attachments=self.get_attachments(payload))
 
 
 class Issues(GithubEvent):
 
     EVENT_NAME = "issues"
 
-    def get_labels(self, payload):
-        return [label['name'] for label in payload['issue']['labels']]
+    def should_alert(self, payload):
+        """
+        If issue has one of the FRONTEND_LABELS
+        """
+        labels = [label['name'] for label in payload['issue']['labels']]
+        return any([label for label in labels if label in FRONTEND_LABELS])
 
-    def get_slack_message(self, payload):
-        content = payload['issue']['body'][:140] if payload['action'] == "opened" else ""
-        return "Issue #{number} {action}: {content}".format(
+    def get_attachments(self, payload):
+        plain = "Issue #{number} {action} {issue_url}: {title}\n{content}".format(
+            issue_url=payload['issue']['html_url'],
             number=payload['issue']['number'],
             action=payload['action'],
-            content=content
+            title=payload['issue']['title'],
+            content=payload['issue']['body'][:140]
         )
+        return [{
+            "author_name": "Issue {}".format(payload['action']),
+            "fallback": plain,
+            "color": "#f4a62a",
+            "title": payload['issue']['title'],
+            "title_link": payload['issue']['html_url'],
+            "text": payload['issue']['body'][:140],
+            "fields": [
+                {
+                    "title": "Labels",
+                    "value": ', '.join([label['name'] for label in payload['issue']['labels']]),
+                    "short": False
+                }
+            ]
+        }]
 
 
 class PullRequests(GithubEvent):
 
     EVENT_NAME = "pull_requests"
 
-    def get_labels(self, payload):
-        return [payload['pull_request']['head']['label']]
+    def should_alert(self, payload):
+        # get the labels from the issue object
+        self.labels = github.get_issue_labels(issue_number=payload['number'])
+        return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_slack_message(self, payload):
         content = payload['pull_request']['title'] if payload['action'] == "opened" else ""
@@ -47,6 +75,30 @@ class PullRequests(GithubEvent):
             action=payload['action'],
             content=content
         )
+
+    def get_attachments(self, payload):
+        plain = "Pull Request #{number} {action} {issue_url}: {title}\n{content}".format(
+            issue_url=payload['pull_request']['html_url'],
+            number=payload['pull_request']['number'],
+            action=payload['action'],
+            title=payload['pull_request']['title'],
+            content=payload['pull_request']['body'][:140]
+        )
+        return [{
+            "author_name": "Pull Request {}".format(payload['action']),
+            "fallback": plain,
+            "color": "#2980b9",
+            "title": payload['pull_request']['title'],
+            "title_link": payload['pull_request']['html_url'],
+            "text": payload['pull_request']['body'][:140],
+            "fields": [
+                {
+                    "title": "Labels",
+                    "value": ', '.join(self.labels),
+                    "short": False
+                }
+            ]
+        }]
 
 
 class GithubRequestEventParser(object):

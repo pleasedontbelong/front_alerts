@@ -117,3 +117,7 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK', None)
+GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN', None)
+GITHUB_API_USER = os.getenv('GITHUB_API_USER', None)
+GITHUB_REPO = "front_alerts"
+GITHUB_OWNER = "pleasedontbelong"

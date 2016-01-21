@@ -13,12 +13,12 @@ class PullRequestsEventsTestCase(TestCase):
             "action": "opened",
             "number": 1,
             "pull_request": {
-                "url": "https: //api.github.com/repos/baxterthehacker/public-repo/pulls/1",
+                "url": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/1",
                 "id": 34778301,
-                "html_url": "https: //github.com/baxterthehacker/public-repo/pull/1",
-                "diff_url": "https: //github.com/baxterthehacker/public-repo/pull/1.diff",
-                "patch_url": "https: //github.com/baxterthehacker/public-repo/pull/1.patch",
-                "issue_url": "https: //api.github.com/repos/baxterthehacker/public-repo/issues/1",
+                "html_url": "https://github.com/baxterthehacker/public-repo/pull/1",
+                "diff_url": "https://github.com/baxterthehacker/public-repo/pull/1.diff",
+                "patch_url": "https://github.com/baxterthehacker/public-repo/pull/1.patch",
+                "issue_url": "https://api.github.com/repos/baxterthehacker/public-repo/issues/1",
                 "number": 1,
                 "state": "open",
                 "locked": False,
@@ -35,11 +35,11 @@ class PullRequestsEventsTestCase(TestCase):
                 "merge_commit_sha": None,
                 "assignee": None,
                 "milestone": None,
-                "commits_url": "https: //api.github.com/repos/baxterthehacker/public-repo/pulls/1/commits",
-                "review_comments_url": "https: //api.github.com/repos/baxterthehacker/public-repo/pulls/1/comments",
-                "review_comment_url": "https: //api.github.com/repos/baxterthehacker/public-repo/pulls/comments{/number}",
-                "comments_url": "https: //api.github.com/repos/baxterthehacker/public-repo/issues/1/comments",
-                "statuses_url": "https: //api.github.com/repos/baxterthehacker/public-repo/statuses/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c",
+                "commits_url": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/1/commits",
+                "review_comments_url": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/1/comments",
+                "review_comment_url": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/comments{/number}",
+                "comments_url": "https://api.github.com/repos/baxterthehacker/public-repo/issues/1/comments",
+                "statuses_url": "https://api.github.com/repos/baxterthehacker/public-repo/statuses/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c",
                 "head": {
                     "label": "baxterthehacker: changes",
                     "ref": "changes",
@@ -57,7 +57,7 @@ class PullRequestsEventsTestCase(TestCase):
                             "id": 6752317
                         },
                         "private": False,
-                        "html_url": "https: //github.com/baxterthehacker/public-repo",
+                        "html_url": "https://github.com/baxterthehacker/public-repo",
                         "description": "",
                         "default_branch": "master"
                     }
@@ -79,19 +79,19 @@ class PullRequestsEventsTestCase(TestCase):
                             "id": 6752317
                         },
                         "private": False,
-                        "html_url": "https: //github.com/baxterthehacker/public-repo",
+                        "html_url": "https://github.com/baxterthehacker/public-repo",
                         "description": "",
                         "fork": False,
-                        "url": "https: //api.github.com/repos/baxterthehacker/public-repo",
+                        "url": "https://api.github.com/repos/baxterthehacker/public-repo",
                         "default_branch": "master"
                     }
                 },
                 "_links": {
                     "self": {
-                        "href": "https: //api.github.com/repos/baxterthehacker/public-repo/pulls/1"
+                        "href": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/1"
                     },
                     "html": {
-                        "href": "https: //github.com/baxterthehacker/public-repo/pull/1"
+                        "href": "https://github.com/baxterthehacker/public-repo/pull/1"
                     }
                 },
                 "merged": False,
@@ -114,16 +114,16 @@ class PullRequestsEventsTestCase(TestCase):
                     "id": 6752317
                 },
                 "private": False,
-                "html_url": "https: //github.com/baxterthehacker/public-repo",
+                "html_url": "https://github.com/baxterthehacker/public-repo",
                 "description": "",
                 "default_branch": "master"
             },
             "sender": {
                 "login": "baxterthehacker",
                 "id": 6752317,
-                "avatar_url": "https: //avatars.githubusercontent.com/u/6752317?v=3",
+                "avatar_url": "https://avatars.githubusercontent.com/u/6752317?v=3",
                 "gravatar_id": "",
-                "url": "https: //api.github.com/users/baxterthehacker"
+                "url": "https://api.github.com/users/baxterthehacker"
             }
         }
 
