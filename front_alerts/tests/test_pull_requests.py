@@ -132,5 +132,5 @@ class PullRequestsEventsTestCase(TestCase):
             '/',
             data=json.dumps(self.payload),
             content_type="application/json",
-            HTTP_X_GITHUB_EVENT='pull_requests')
+            HTTP_X_GITHUB_EVENT='pull_request')
         self.parser.parse(request)

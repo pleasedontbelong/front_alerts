@@ -61,7 +61,7 @@ class Issues(GithubEvent):
 
 class PullRequests(GithubEvent):
 
-    EVENT_NAME = "pull_requests"
+    EVENT_NAME = "pull_request"
 
     def should_alert(self, payload):
         # get the labels from the issue object
