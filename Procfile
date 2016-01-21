@@ -1,0 +1,1 @@
+web: gunicorn front_alerts.wsgi --log-file -
