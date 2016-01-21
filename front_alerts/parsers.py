@@ -33,10 +33,27 @@ class Issues(GithubEvent):
         )
 
 
+class PullRequests(GithubEvent):
+
+    EVENT_NAME = "pull_requests"
+
+    def get_labels(self, payload):
+        return [payload['pull_request']['head']['label']]
+
+    def get_slack_message(self, payload):
+        content = payload['pull_request']['title'] if payload['action'] == "opened" else ""
+        return "PR #{number} {action}: {content}".format(
+            number=payload['pull_request']['number'],
+            action=payload['action'],
+            content=content
+        )
+
+
 class GithubRequestEventParser(object):
 
     EVENT_MAP = {
-        Issues.EVENT_NAME: Issues
+        Issues.EVENT_NAME: Issues,
+        PullRequests.EVENT_NAME: PullRequests
     }
 
     def __init__(self, *args, **kwargs):
