@@ -155,7 +155,7 @@ class PullRequestsEventsTestCase(TestCase):
                 "issues_url": "https://api.github.com/repos/botify-hq/botify/issues{/number}",
                 "pulls_url": "https://api.github.com/repos/botify-hq/botify/pulls{/number}",
                 "milestones_url": "https://api.github.com/repos/botify-hq/botify/milestones{/number}",
-                "notifications_url": "https://api.github.com/repos/botify-hq/botify/notifications{?since,all,participating}",
+                "notifications_url": "https://api.github.com/repos/botify-hq/botify/notifications{?since,all,part}",
                 "labels_url": "https://api.github.com/repos/botify-hq/botify/labels{/name}",
                 "releases_url": "https://api.github.com/repos/botify-hq/botify/releases{/id}",
                 "deployments_url": "https://api.github.com/repos/botify-hq/botify/deployments",
@@ -216,6 +216,7 @@ class PullRequestsEventsTestCase(TestCase):
         }
 
     def test_opened(self):
+        # @TODO mock github.get_issue_labels()
         request = self.factory.post(
             '/',
             data=json.dumps(self.payload),

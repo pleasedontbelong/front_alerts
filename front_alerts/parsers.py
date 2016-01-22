@@ -69,15 +69,19 @@ class PullRequests(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
+        action = payload['action']
+        if action in ('labeled', 'unlabeled'):
+            action += " " + payload['label']['name']
+
         plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
             pr_url=payload['pull_request']['html_url'],
             number=payload['pull_request']['number'],
-            action=payload['action'],
+            action=action,
             title=payload['pull_request']['title'],
             content=payload['pull_request']['body'][:140]
         )
         return [{
-            "author_name": "Pull Request {}".format(payload['action']),
+            "author_name": "Pull Request {}".format(action),
             "fallback": plain,
             "color": "#2980b9",
             "title": payload['pull_request']['title'],
