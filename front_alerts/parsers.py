@@ -109,11 +109,14 @@ class PullRequestsComment(GithubEvent):
             content=payload['comment']['body'][:140]
         )
         return [{
-            "author_name": "New Comment on Pull Request #{}".format(payload['pull_request']['number']),
+            "author_name": "New Comment on Pull Request #{} {}".format(
+                payload['pull_request']['number'],
+                payload['pull_request']['title'],
+            ),
             "author_link": payload['pull_request']['html_url'],
             "fallback": plain,
             "color": "#16a085",
-            "title": "{} {}".format(payload['comment']['path'], payload['comment']['diff_hunk']),
+            "title": payload['comment']['path'],
             "title_link": payload['comment']['html_url'],
             "text": payload['comment']['body'][:140],
             "fields": [
