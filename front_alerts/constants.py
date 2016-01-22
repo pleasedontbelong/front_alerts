@@ -1,2 +1,2 @@
-FRONTEND_CHANNEL = "#frontend-devs"
+FRONTEND_CHANNEL = "#frontend-alerts"
 FRONTEND_LABELS = ['comp:frontend']
