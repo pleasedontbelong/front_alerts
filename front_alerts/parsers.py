@@ -68,17 +68,9 @@ class PullRequests(GithubEvent):
         self.labels = github.get_issue_labels(issue_number=payload['number'])
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
-    def get_slack_message(self, payload):
-        content = payload['pull_request']['title'] if payload['action'] == "opened" else ""
-        return "PR #{number} {action}: {content}".format(
-            number=payload['pull_request']['number'],
-            action=payload['action'],
-            content=content
-        )
-
     def get_attachments(self, payload):
-        plain = "Pull Request #{number} {action} {issue_url}: {title}\n{content}".format(
-            issue_url=payload['pull_request']['html_url'],
+        plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
+            pr_url=payload['pull_request']['html_url'],
             number=payload['pull_request']['number'],
             action=payload['action'],
             title=payload['pull_request']['title'],
@@ -101,11 +93,50 @@ class PullRequests(GithubEvent):
         }]
 
 
+class PullRequestsComment(GithubEvent):
+
+    EVENT_NAME = "pull_request_review_comment"
+
+    def should_alert(self, payload):
+        # get the labels from the issue object
+        self.labels = github.get_issue_labels(issue_number=payload['pull_request']['number'])
+        return any([label for label in self.labels if label in FRONTEND_LABELS])
+
+    def get_attachments(self, payload):
+        plain = "New Comment on Pull Request #{number} {comment_url}: \n{content}".format(
+            comment_url=payload['comment']['html_url'],
+            number=payload['pull_request']['number'],
+            content=payload['comment']['body'][:140]
+        )
+        return [{
+            "author_name": "New Comment on Pull Request #{}".format(payload['pull_request']['number']),
+            "author_link": payload['pull_request']['html_url'],
+            "fallback": plain,
+            "color": "#16a085",
+            "title": "{}\n{}".format(payload['comment']['path'], payload['comment']['diff_hunk']),
+            "title_link": payload['comment']['html_url'],
+            "text": payload['comment']['body'][:140],
+            "fields": [
+                {
+                    "title": "Labels",
+                    "value": ', '.join(self.labels),
+                    "short": False
+                },
+                {
+                    "title": "Author",
+                    "value": payload['pull_request']['user']['login'],
+                    "short": False
+                }
+            ]
+        }]
+
+
 class GithubRequestEventParser(object):
 
     EVENT_MAP = {
         Issues.EVENT_NAME: Issues,
-        PullRequests.EVENT_NAME: PullRequests
+        PullRequests.EVENT_NAME: PullRequests,
+        PullRequestsComment.EVENT_NAME: PullRequestsComment
     }
 
     def __init__(self, *args, **kwargs):
@@ -115,6 +146,8 @@ class GithubRequestEventParser(object):
 
     def parse(self, request):
         self.action = request.META['HTTP_X_GITHUB_EVENT']
+        if self.action not in self.EVENT_MAP:
+            return None
         self.payload = json.loads(request.body)
         self.event_class = self.EVENT_MAP[self.action]()
         self.event_class.to_slack(self.payload)
