@@ -113,7 +113,7 @@ class PullRequestsComment(GithubEvent):
             "author_link": payload['pull_request']['html_url'],
             "fallback": plain,
             "color": "#16a085",
-            "title": "{}\n{}".format(payload['comment']['path'], payload['comment']['diff_hunk']),
+            "title": "{} {}".format(payload['comment']['path'], payload['comment']['diff_hunk']),
             "title_link": payload['comment']['html_url'],
             "text": payload['comment']['body'][:140],
             "fields": [
@@ -124,7 +124,7 @@ class PullRequestsComment(GithubEvent):
                 },
                 {
                     "title": "Author",
-                    "value": payload['pull_request']['user']['login'],
+                    "value": "@{}".format(payload['pull_request']['user']['login']),
                     "short": False
                 }
             ]
