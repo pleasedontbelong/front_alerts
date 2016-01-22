@@ -103,13 +103,13 @@ class PullRequestsComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        plain = "New Comment on Pull Request #{number} {comment_url}: \n{content}".format(
+        plain = "New Review Comment on Pull Request #{number} {comment_url}: \n{content}".format(
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "author_name": "New Comment on Pull Request #{} {}".format(
+            "author_name": "New Review Comment on Pull Request #{} {}".format(
                 payload['pull_request']['number'],
                 payload['pull_request']['title'],
             ),
@@ -134,12 +134,60 @@ class PullRequestsComment(GithubEvent):
         }]
 
 
+class IssueComment(GithubEvent):
+
+    EVENT_NAME = "issue_comment"
+
+    def should_alert(self, payload):
+        # get the labels from the issue object
+        self.labels = [label['name'] for label in payload['issue']['labels']]
+        return any([label for label in self.labels if label in FRONTEND_LABELS])
+
+    def get_attachments(self, payload):
+        if 'pull_request' in payload['issue']:
+            action_title = "New Comment on Pull Request"
+            color = "#54A4D9"
+        else:
+            action_title = "New Comment on Issue"
+            color = "#f6bb5a"
+        plain = "{action_title} #{number} {comment_url}: \n{content}".format(
+            action_title=action_title,
+            comment_url=payload['comment']['html_url'],
+            number=payload['issue']['number'],
+            content=payload['comment']['body'][:140]
+        )
+        return [{
+            "title": "{} #{} {}".format(
+                action_title,
+                payload['issue']['number'],
+                payload['issue']['title'],
+            ),
+            "title_link": payload['comment']['html_url'],
+            "fallback": plain,
+            "color": color,
+            "text": payload['comment']['body'][:140],
+            "fields": [
+                {
+                    "title": "Labels",
+                    "value": ', '.join(self.labels),
+                    "short": False
+                },
+                {
+                    "title": "Author",
+                    "value": "@{}".format(payload['comment']['user']['login']),
+                    "short": False
+                }
+            ]
+        }]
+
+
 class GithubRequestEventParser(object):
 
     EVENT_MAP = {
         Issues.EVENT_NAME: Issues,
         PullRequests.EVENT_NAME: PullRequests,
-        PullRequestsComment.EVENT_NAME: PullRequestsComment
+        PullRequestsComment.EVENT_NAME: PullRequestsComment,
+        IssueComment.EVENT_NAME: IssueComment
     }
 
     def __init__(self, *args, **kwargs):
