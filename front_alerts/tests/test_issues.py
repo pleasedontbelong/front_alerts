@@ -2,13 +2,13 @@
 import json
 from unittest import TestCase
 from django.test.client import RequestFactory
-from front_alerts.parsers import GithubRequestEventParser
+from front_alerts.handlers.github import GithubRequestEventHandler
 
 
 class IssuesEventsTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.parser = GithubRequestEventParser()
+        self.parser = GithubRequestEventHandler()
         self.payload = {
             "action": "opened",
             "issue": {

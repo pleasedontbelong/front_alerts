@@ -1,7 +1,7 @@
 import json
-import slack
-import github
-from .constants import FRONTEND_LABELS
+from front_alerts import slack
+from front_alerts import github
+from front_alerts.constants import FRONTEND_LABELS
 
 
 class GithubEvent(object):
@@ -185,7 +185,7 @@ class IssueComment(GithubEvent):
         }]
 
 
-class GithubRequestEventParser(object):
+class GithubRequestEventHandler(object):
 
     EVENT_MAP = {
         Issues.EVENT_NAME: Issues,
@@ -197,7 +197,7 @@ class GithubRequestEventParser(object):
     def __init__(self, *args, **kwargs):
         self.payload = None
         self.action = ""
-        super(GithubRequestEventParser, self).__init__(*args, **kwargs)
+        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
 
     def parse(self, request):
         self.action = request.META['HTTP_X_GITHUB_EVENT']
