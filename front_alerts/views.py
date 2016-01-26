@@ -2,7 +2,8 @@ from django.http import HttpResponse
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from .handlers.github import GithubRequestEventHandler, JenkinsRequestEventHandler
+from .handlers.github import GithubRequestEventHandler
+from .handlers.jenkins import JenkinsRequestEventHandler
 
 
 class HookView(View):
