@@ -25,7 +25,7 @@ class JenkinsPRView(View):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        return super(HookView, self).dispatch(request, *args, **kwargs)
+        return super(JenkinsPRView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request):
         return HttpResponse('GET')
