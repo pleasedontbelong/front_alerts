@@ -37,16 +37,13 @@ class Issues(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            content = ":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
+            return ":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['issue']['number'],
                 title=payload['issue']['title'],
                 issue_url=payload['issue']['html_url'],
                 action=payload['action'],
                 label=payload['label']['name']
             )
-            if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
-                content += content + " @here Review Requested"
-            return content
         return ""
 
     def get_attachments(self, payload):
@@ -100,11 +97,22 @@ class PullRequests(GithubEvent):
             if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
                 content += content + " @here Review Requested"
             return content
+
+        if action == "synchronize":
+            return ":pencil2: New commits on <{pr_url}|#{number} {title}>".format(
+                pr_url=payload['pull_request']['html_url'],
+                number=payload['pull_request']['number'],
+                title=payload['pull_request']['title'],
+            )
+
         return ""
 
     def get_attachments(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
+            return None
+
+        if action == "synchronize":
             return None
 
         plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
