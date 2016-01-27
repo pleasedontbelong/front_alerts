@@ -37,7 +37,7 @@ class Issues(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            content = ":label: <Issue #{number} {title}|{issue_url}> {action} {label}".format(
+            content = ":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['issue']['number'],
                 title=payload['issue']['title'],
                 issue_url=payload['issue']['html_url'],
@@ -90,7 +90,7 @@ class PullRequests(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            content = ":label: <Pull Request #{number} {title}|{pr_url}> {action} {label}".format(
+            content = ":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
                 pr_url=payload['pull_request']['html_url'],
