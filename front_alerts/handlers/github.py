@@ -1,7 +1,7 @@
 import json
 from front_alerts import slack
 from front_alerts import github
-from front_alerts.constants import FRONTEND_LABELS
+from front_alerts.constants import FRONTEND_LABELS, REVIEW_REQUEST_LABEL
 
 
 class GithubEvent(object):
@@ -34,7 +34,26 @@ class Issues(GithubEvent):
         labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in labels if label in FRONTEND_LABELS])
 
+    def get_content(self, payload):
+        action = payload['action']
+        if action in ('labeled', 'unlabeled'):
+            content = ":label: <Issue #{number} {title}|{issue_url}> {action} {label}".format(
+                number=payload['issue']['number'],
+                title=payload['issue']['title'],
+                issue_url=payload['issue']['html_url'],
+                action=payload['action'],
+                label=payload['label']['name']
+            )
+            if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
+                content += content + " @here Review Requested"
+            return content
+        return ""
+
     def get_attachments(self, payload):
+        action = payload['action']
+        if action in ('labeled', 'unlabeled'):
+            return None
+
         plain = "Issue #{number} {action} {issue_url}: {title}\n{content}".format(
             issue_url=payload['issue']['html_url'],
             number=payload['issue']['number'],
@@ -68,10 +87,25 @@ class PullRequests(GithubEvent):
         self.labels = github.get_issue_labels(issue_number=payload['number'])
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
+    def get_content(self, payload):
+        action = payload['action']
+        if action in ('labeled', 'unlabeled'):
+            content = ":label: <Pull Request #{number} {title}|{pr_url}> {action} {label}".format(
+                number=payload['pull_request']['number'],
+                title=payload['pull_request']['title'],
+                pr_url=payload['pull_request']['html_url'],
+                action=action,
+                label=payload['label']['name']
+            )
+            if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
+                content += content + " @here Review Requested"
+            return content
+        return ""
+
     def get_attachments(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            action += " " + payload['label']['name']
+            return None
 
         plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
             pr_url=payload['pull_request']['html_url'],
