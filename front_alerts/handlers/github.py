@@ -149,13 +149,16 @@ class PullRequestsComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        plain = "New Review Comment on Pull Request #{number} {comment_url}: \n{content}".format(
+        plain = "@{commenter} wrote a comment on PR #{number} {comment_url}: \n{content}".format(
+            commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "author_name": "New Review Comment on Pull Request #{} {}".format(
+            "author_name": "@{} commented on @{}'s Pull Request #{} {}".format(
+                payload['comment']['user']['login'],
+                payload['pull_request']['user']['login'],
                 payload['pull_request']['number'],
                 payload['pull_request']['title'],
             ),
@@ -169,11 +172,6 @@ class PullRequestsComment(GithubEvent):
                 {
                     "title": "Labels",
                     "value": ', '.join(self.labels),
-                    "short": False
-                },
-                {
-                    "title": "Author",
-                    "value": "@{}".format(payload['pull_request']['user']['login']),
                     "short": False
                 }
             ]

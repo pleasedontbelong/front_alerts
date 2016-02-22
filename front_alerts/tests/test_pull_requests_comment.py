@@ -63,10 +63,10 @@ class PullRequestsEventsTestCase(TestCase):
                 "diff_url": "https://github.com/pleasedontbelong/front_alerts/pull/9.diff",
                 "patch_url": "https://github.com/pleasedontbelong/front_alerts/pull/9.patch",
                 "issue_url": "https://api.github.com/repos/pleasedontbelong/front_alerts/issues/9",
-                "number": 9,
+                "number": 2637,
                 "state": "open",
                 "locked": False,
-                "title": "Test Commit on PR 5",
+                "title": "Just Testing here, ignore me",
                 "user": {
                     "login": "pleasedontbelong",
                     "id": 1785603,
