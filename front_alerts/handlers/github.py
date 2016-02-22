@@ -95,7 +95,7 @@ class PullRequests(GithubEvent):
                 label=payload['label']['name']
             )
             if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
-                content = content + " @here Review Requested"
+                content = content + " <@here|here> Review Requested"
             return content
 
         if action == "synchronize":

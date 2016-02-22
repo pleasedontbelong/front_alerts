@@ -11,7 +11,7 @@ class PullRequestsEventsTestCase(TestCase):
         self.parser = GithubRequestEventHandler()
         self.payload = {
             "action": "opened",
-            "number": 1,
+            "number": 2637,
             "pull_request": {
                 "url": "https://api.github.com/repos/baxterthehacker/public-repo/pulls/1",
                 "id": 34778301,
@@ -19,10 +19,10 @@ class PullRequestsEventsTestCase(TestCase):
                 "diff_url": "https://github.com/baxterthehacker/public-repo/pull/1.diff",
                 "patch_url": "https://github.com/baxterthehacker/public-repo/pull/1.patch",
                 "issue_url": "https://api.github.com/repos/baxterthehacker/public-repo/issues/1",
-                "number": 1,
+                "number": 2637,
                 "state": "open",
                 "locked": False,
-                "title": "Update the README with new information",
+                "title": "Just testing alerts",
                 "user": {
                     "login": "baxterthehacker",
                     "id": 6752317
