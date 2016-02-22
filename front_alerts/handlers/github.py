@@ -188,11 +188,16 @@ class IssueComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
+        action_title = "@{} commented on @{}'s ".format(
+            payload['comment']['user']['login'],
+            payload['issue']['user']['login']
+        )
+
         if 'pull_request' in payload['issue']:
-            action_title = "New Comment on Pull Request"
+            action_title += "Pull Request"
             color = "#54A4D9"
         else:
-            action_title = "New Comment on Issue"
+            action_title += "Issue"
             color = "#f6bb5a"
         plain = "{action_title} #{number} {comment_url}: \n{content}".format(
             action_title=action_title,
@@ -214,11 +219,6 @@ class IssueComment(GithubEvent):
                 {
                     "title": "Labels",
                     "value": ', '.join(self.labels),
-                    "short": False
-                },
-                {
-                    "title": "Author",
-                    "value": "@{}".format(payload['comment']['user']['login']),
                     "short": False
                 }
             ]

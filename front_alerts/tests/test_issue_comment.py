@@ -19,7 +19,7 @@ class PullRequestsEventsTestCase(TestCase):
                 "html_url": "https://github.com/botify-hq/botify/pull/2457",
                 "id": 127903339,
                 "number": 2457,
-                "title": "Fix double subscription bug",
+                "title": "Im just testing front alerts",
                 "user": {
                     "login": "AdeleD",
                     "id": 942068,
@@ -93,7 +93,7 @@ class PullRequestsEventsTestCase(TestCase):
                 },
                 "created_at": "2016-01-22T09:59:13Z",
                 "updated_at": "2016-01-22T09:59:13Z",
-                "body": ":+1: "
+                "body": "please ignore me "
             },
             "repository": {
                 "id": 10640087,
