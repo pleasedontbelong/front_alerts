@@ -256,4 +256,4 @@ class GithubRequestEventHandler(object):
         self.event_class.to_slack(self.payload)
 
     def should_alert(self):
-        self.event_class.should_alert(self.payload)
+        return self.event_class.should_alert(self.payload)
