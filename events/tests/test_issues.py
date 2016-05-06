@@ -1,14 +1,14 @@
 # from django.test import TestCase
 import json
 from unittest import TestCase
+from django.test import Client
 from django.test.client import RequestFactory
-from front_alerts.handlers.github import GithubRequestEventHandler
+from events.handlers.github import GithubRequestEventHandler
 
 
 class IssuesEventsTestCase(TestCase):
     def setUp(self):
-        self.factory = RequestFactory()
-        self.parser = GithubRequestEventHandler()
+        self.client = Client(HTTP_X_GITHUB_EVENT='issues')
         self.payload = {
             "action": "opened",
             "issue": {
@@ -51,12 +51,14 @@ class IssuesEventsTestCase(TestCase):
         }
 
     def test_opened(self):
-        request = self.factory.post(
-            '/',
-            data=json.dumps(self.payload),
-            content_type="application/json",
-            HTTP_X_GITHUB_EVENT='issues')
-        self.parser.parse(request)
+        response = self.client.post('/', self.payload)
+        import ipdb;ipdb.set_trace()
+        # request = self.factory.post(
+        #     '/',
+        #     data=json.dumps(self.payload),
+        #     content_type="application/json",
+        #     )
+        # self.parser.parse(request)
 
 
 class IssueLabelEventTestCase(TestCase):

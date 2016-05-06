@@ -2,7 +2,7 @@
 import json
 from unittest import TestCase
 from django.test.client import RequestFactory
-from front_alerts.handlers.jenkins import JenkinsRequestEventHandler
+from events.handlers.jenkins import JenkinsRequestEventHandler
 
 
 class PullRequestsEventsTestCase(TestCase):

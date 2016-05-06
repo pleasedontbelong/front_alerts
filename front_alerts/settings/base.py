@@ -105,3 +105,23 @@ GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN', None)
 GITHUB_API_USER = os.getenv('GITHUB_API_USER', None)
 GITHUB_REPO = os.getenv('GITHUB_REPO', "front_alerts")
 GITHUB_OWNER = os.getenv('GITHUB_OWNER', "pleasedontbelong")
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
+
+SLACK_DRY_RUN = True

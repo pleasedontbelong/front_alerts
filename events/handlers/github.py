@@ -1,7 +1,9 @@
 import json
+import logging
 from front_alerts import slack
 from front_alerts import github
 from front_alerts.constants import FRONTEND_LABELS, REVIEW_REQUEST_LABEL
+from django.conf import settings
 
 
 class GithubEvent(object):
@@ -20,7 +22,12 @@ class GithubEvent(object):
 
     def to_slack(self, payload):
         if self.should_alert(payload):
-            slack.post(content=self.get_content(payload), attachments=self.get_attachments(payload))
+            content = self.get_content(payload)
+            attachments = self.get_attachments(payload)
+            if not settings.SLACK_DRY_RUN:
+                slack.post(content=content, attachments=attachments)
+            else:
+                logging.warning('CONTENT: %s\tATTACHMENTS: %s' % (content, attachments))
 
 
 class Issues(GithubEvent):
@@ -234,15 +241,19 @@ class GithubRequestEventHandler(object):
         IssueComment.EVENT_NAME: IssueComment
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, request, *args, **kwargs):
         self.payload = None
         self.action = ""
-        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
-
-    def parse(self, request):
-        self.action = request.META['HTTP_X_GITHUB_EVENT']
+        self.request = request
+        self.action = self.request.META['HTTP_X_GITHUB_EVENT']
         if self.action not in self.EVENT_MAP:
             return None
-        self.payload = json.loads(request.body)
+        self.payload = json.loads(self.request.body)
         self.event_class = self.EVENT_MAP[self.action]()
+        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
+
+    def parse(self):
         self.event_class.to_slack(self.payload)
+
+    def should_alert(self):
+        self.event_class.should_alert(self.payload)

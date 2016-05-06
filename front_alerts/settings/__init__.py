@@ -1,8 +1,6 @@
 import os
 
-APP_ENVIRONMENT = os.getenv('APP_ENVIRONMENT')
-if APP_ENVIRONMENT is None:
-    raise ValueError('APP_ENVIRONMENT is a mandatory variable!')
+APP_ENVIRONMENT = os.getenv('APP_ENVIRONMENT', 'local')
 
 if APP_ENVIRONMENT == 'heroku':
     from .heroku import *  # NOQA

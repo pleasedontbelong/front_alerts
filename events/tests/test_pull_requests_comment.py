@@ -2,7 +2,7 @@
 import json
 from unittest import TestCase
 from django.test.client import RequestFactory
-from front_alerts.handlers.github import GithubRequestEventHandler
+from events.handlers.github import GithubRequestEventHandler
 
 
 class PullRequestsEventsTestCase(TestCase):

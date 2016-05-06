@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .handlers.github import GithubRequestEventHandler
 from .handlers.jenkins import JenkinsRequestEventHandler
+from .models import Event
 
 
 class HookView(View):
@@ -12,12 +13,13 @@ class HookView(View):
     def dispatch(self, request, *args, **kwargs):
         return super(HookView, self).dispatch(request, *args, **kwargs)
 
-    def get(self, request):
-        return HttpResponse('GET')
-
     def post(self, request):
-        event = GithubRequestEventHandler()
-        event.parse(request)
+        event = GithubRequestEventHandler(request)
+        event.parse()
+        if event.should_parse():
+            Event.objects.create(
+                event_data=event.payload
+            )
         return HttpResponse("OK")
 
 
@@ -26,9 +28,6 @@ class JenkinsPRView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super(JenkinsPRView, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request):
-        return HttpResponse('GET')
 
     def post(self, request):
         event = JenkinsRequestEventHandler()
