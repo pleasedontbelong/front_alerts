@@ -20,6 +20,12 @@ class GithubEvent(object):
     def get_attachments(self, payload):
         return None
 
+    def get_event_id(self, payload):
+        return ""
+
+    def get_event_name(self, payload):
+        return u"{}_{}".format(self.EVENT_NAME, payload['action'])
+
     def to_slack(self, payload):
         if self.should_alert(payload):
             content = self.get_content(payload)
@@ -52,6 +58,9 @@ class Issues(GithubEvent):
                 label=payload['label']['name']
             )
         return ""
+
+    def get_event_id(self, payload):
+        return payload['issue']['number']
 
     def get_attachments(self, payload):
         action = payload['action']
@@ -113,6 +122,9 @@ class PullRequests(GithubEvent):
             )
 
         return ""
+
+    def get_event_id(self, payload):
+        return payload['pull_request']['number']
 
     def get_attachments(self, payload):
         action = payload['action']
@@ -184,6 +196,9 @@ class PullRequestsComment(GithubEvent):
             ]
         }]
 
+    def get_event_id(self, payload):
+        return payload['pull_request']['number']
+
 
 class IssueComment(GithubEvent):
 
@@ -231,6 +246,9 @@ class IssueComment(GithubEvent):
             ]
         }]
 
+    def get_event_id(self, payload):
+        return payload['issue']['number']
+
 
 class GithubRequestEventHandler(object):
 
@@ -257,3 +275,11 @@ class GithubRequestEventHandler(object):
 
     def should_alert(self):
         return self.event_class.should_alert(self.payload)
+
+    @property
+    def event_id(self):
+        return self.event_class.get_event_id(self.payload)
+
+    @property
+    def event_name(self):
+        return self.event_class.get_event_name(self.payload)

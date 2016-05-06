@@ -21,7 +21,9 @@ class HookView(View):
         event.parse()
         if event.should_alert():
             Event.objects.create(
-                event_data=event.payload
+                event_data=event.payload,
+                event_name=event.event_name,
+                event_id=event.event_id
             )
         return HttpResponse("OK")
 
