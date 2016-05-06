@@ -19,7 +19,7 @@ class HookView(View):
     def post(self, request):
         event = GithubRequestEventHandler(request)
         event.parse()
-        if event.should_parse():
+        if event.should_alert():
             Event.objects.create(
                 event_data=event.payload
             )
