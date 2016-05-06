@@ -10,7 +10,7 @@ class UrlsListAdmin(admin.ModelAdmin):
 
     model = Event
 
-    list_display = ('received_date', 'parsed_date', 'status')
+    list_display = ('received_date', 'event_name', 'event_id', 'parsed_date', 'status')
 
     list_filter = ('status',)
 
