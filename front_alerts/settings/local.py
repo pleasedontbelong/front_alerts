@@ -4,3 +4,4 @@ from .base import *  # NOQA
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DEBUG = True
+SLACK_DRY_RUN = True

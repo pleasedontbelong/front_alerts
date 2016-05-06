@@ -2,6 +2,7 @@ from .base import *  # NOQA
 import dj_database_url
 
 DEBUG = True
+SLACK_DRY_RUN = False
 # Parse database configuration from $DATABASE_URL
 DATABASES['default'] = dj_database_url.config()
 

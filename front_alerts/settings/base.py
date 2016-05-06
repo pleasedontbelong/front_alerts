@@ -130,4 +130,4 @@ LOGGING = {
     },
 }
 
-SLACK_DRY_RUN = True
+SLACK_DRY_RUN = False
