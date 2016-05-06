@@ -10,6 +10,6 @@ urlpatterns = patterns(
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^jenkins_pr$', JenkinsPRView.as_view(), name='jenkins-pr'),
-    url(r'^/$', HookView.as_view(), name='home'),
+    url(r'^github_event$', HookView.as_view(), name='home'),
 
 )
