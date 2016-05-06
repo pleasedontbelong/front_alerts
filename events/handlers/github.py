@@ -44,7 +44,7 @@ class Issues(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            return ":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
+            return u":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['issue']['number'],
                 title=payload['issue']['title'],
                 issue_url=payload['issue']['html_url'],
@@ -58,7 +58,7 @@ class Issues(GithubEvent):
         if action in ('labeled', 'unlabeled'):
             return None
 
-        plain = "Issue #{number} {action} {issue_url}: {title}\n{content}".format(
+        plain = u"Issue #{number} {action} {issue_url}: {title}\n{content}".format(
             issue_url=payload['issue']['html_url'],
             number=payload['issue']['number'],
             action=payload['action'],
@@ -66,7 +66,7 @@ class Issues(GithubEvent):
             content=payload['issue']['body'][:140]
         )
         return [{
-            "author_name": "Issue {}".format(payload['action']),
+            "author_name": u"Issue {}".format(payload['action']),
             "fallback": plain,
             "color": "#f4a62a",
             "title": payload['issue']['title'],
@@ -94,7 +94,7 @@ class PullRequests(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            content = ":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
+            content = u":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
                 pr_url=payload['pull_request']['html_url'],
@@ -106,7 +106,7 @@ class PullRequests(GithubEvent):
             return content
 
         if action == "synchronize":
-            return ":pencil2: New commits on <{pr_url}|#{number} {title}>".format(
+            return u":pencil2: New commits on <{pr_url}|#{number} {title}>".format(
                 pr_url=payload['pull_request']['html_url'],
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
@@ -122,7 +122,7 @@ class PullRequests(GithubEvent):
         if action == "synchronize":
             return None
 
-        plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
+        plain = u"Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
             pr_url=payload['pull_request']['html_url'],
             number=payload['pull_request']['number'],
             action=action,
@@ -130,7 +130,7 @@ class PullRequests(GithubEvent):
             content=payload['pull_request']['body'][:140]
         )
         return [{
-            "author_name": "Pull Request {}".format(action),
+            "author_name": u"Pull Request {}".format(action),
             "fallback": plain,
             "color": "#2980b9",
             "title": payload['pull_request']['title'],
@@ -156,14 +156,14 @@ class PullRequestsComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        plain = "@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
+        plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
             commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "author_name": "@{} commented on @{}'s Pull Request Code #{} {}".format(
+            "author_name": u"@{} commented on @{}'s Pull Request Code #{} {}".format(
                 payload['comment']['user']['login'],
                 payload['pull_request']['user']['login'],
                 payload['pull_request']['number'],
@@ -195,7 +195,7 @@ class IssueComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        action_title = "@{} commented on @{}'s ".format(
+        action_title = u"@{} commented on @{}'s ".format(
             payload['comment']['user']['login'],
             payload['issue']['user']['login']
         )
@@ -206,14 +206,14 @@ class IssueComment(GithubEvent):
         else:
             action_title += "Issue"
             color = "#f6bb5a"
-        plain = "{action_title} #{number} {comment_url}: \n{content}".format(
+        plain = u"{action_title} #{number} {comment_url}: \n{content}".format(
             action_title=action_title,
             comment_url=payload['comment']['html_url'],
             number=payload['issue']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "title": "{} #{} {}".format(
+            "title": u"{} #{} {}".format(
                 action_title,
                 payload['issue']['number'],
                 payload['issue']['title'],
