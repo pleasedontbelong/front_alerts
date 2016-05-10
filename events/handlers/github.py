@@ -2,19 +2,18 @@ import json
 import logging
 from front_alerts import slack
 from front_alerts import github
-from front_alerts.constants import FRONTEND_LABELS, REVIEW_REQUEST_LABEL
 from django.conf import settings
 
 
 class GithubEvent(object):
 
-    def should_alert(self, payload):
+    def should_send(self, payload, trigger_labels):
         """
         Check if we should send an alert to slack
         """
         return False
 
-    def get_content(self, payload):
+    def get_content(self, payload, review_request_label):
         return ""
 
     def get_attachments(self, payload):
@@ -26,28 +25,28 @@ class GithubEvent(object):
     def get_event_name(self, payload):
         return u"{}-{}".format(self.EVENT_NAME, payload['action'])
 
-    def to_slack(self, payload):
-        if self.should_alert(payload):
-            content = self.get_content(payload)
-            attachments = self.get_attachments(payload)
-            if not settings.SLACK_DRY_RUN:
-                slack.post(content=content, attachments=attachments)
-            else:
-                logging.warning('CONTENT: %s\tATTACHMENTS: %s' % (content, attachments))
+    def send(self, payload, slack_channels, review_request_label):
+        content = self.get_content(payload, review_request_label)
+        attachments = self.get_attachments(payload)
+        if not settings.SLACK_DRY_RUN:
+            for channel in slack_channels:
+                slack.post(content=content, channel=channel, attachments=attachments)
+        else:
+            logging.warning('CONTENT: %s\tATTACHMENTS: %s' % (content, attachments))
 
 
 class Issues(GithubEvent):
 
     EVENT_NAME = "issues"
 
-    def should_alert(self, payload):
+    def should_send(self, payload, trigger_labels):
         """
         If issue has one of the FRONTEND_LABELS
         """
         labels = [label['name'] for label in payload['issue']['labels']]
-        return any([label for label in labels if label in FRONTEND_LABELS])
+        return any([label for label in labels if label in trigger_labels])
 
-    def get_content(self, payload):
+    def get_content(self, payload, review_request_label):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return u":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
@@ -95,12 +94,12 @@ class PullRequests(GithubEvent):
 
     EVENT_NAME = "pull_request"
 
-    def should_alert(self, payload):
+    def should_send(self, payload, trigger_labels):
         # get the labels from the issue object
         self.labels = github.get_issue_labels(issue_number=payload['number'])
-        return any([label for label in self.labels if label in FRONTEND_LABELS])
+        return any([label for label in self.labels if label in trigger_labels])
 
-    def get_content(self, payload):
+    def get_content(self, payload, review_request_label):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             content = u":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
@@ -110,7 +109,8 @@ class PullRequests(GithubEvent):
                 action=action,
                 label=payload['label']['name']
             )
-            if action == "labeled" and payload['label']['name'] == REVIEW_REQUEST_LABEL:
+            review_request_label = kwargs.get('review_request_label', '')
+            if action == "labeled" and payload['label']['name'] == review_request_label:
                 content = content + " <!here> Review Requested"
             return content
 
@@ -162,10 +162,10 @@ class PullRequestsComment(GithubEvent):
 
     EVENT_NAME = "pull_request_review_comment"
 
-    def should_alert(self, payload):
+    def should_send(self, payload, trigger_labels):
         # get the labels from the issue object
         self.labels = github.get_issue_labels(issue_number=payload['pull_request']['number'])
-        return any([label for label in self.labels if label in FRONTEND_LABELS])
+        return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload):
         plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
@@ -204,10 +204,10 @@ class IssueComment(GithubEvent):
 
     EVENT_NAME = "issue_comment"
 
-    def should_alert(self, payload):
+    def should_send(self, payload, trigger_labels):
         # get the labels from the issue object
         self.labels = [label['name'] for label in payload['issue']['labels']]
-        return any([label for label in self.labels if label in FRONTEND_LABELS])
+        return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload):
         action_title = u"@{} commented on @{}'s ".format(
@@ -259,22 +259,19 @@ class GithubRequestEventHandler(object):
         IssueComment.EVENT_NAME: IssueComment
     }
 
-    def __init__(self, request, *args, **kwargs):
-        self.payload = None
-        self.action = ""
+    def __init__(self, request):
         self.request = request
         self.action = self.request.META['HTTP_X_GITHUB_EVENT']
         if self.action not in self.EVENT_MAP:
             return None
         self.payload = json.loads(self.request.body)
         self.event_class = self.EVENT_MAP[self.action]()
-        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
 
-    def parse(self):
-        self.event_class.to_slack(self.payload)
+    def send(self, slack_channels, review_request_label):
+        self.event_class.send(self.payload, slack_channels, review_request_label)
 
-    def should_alert(self):
-        return self.event_class.should_alert(self.payload)
+    def should_send(self, trigger_labels):
+        return self.event_class.should_send(self.payload, trigger_labels)
 
     @property
     def event_id(self):

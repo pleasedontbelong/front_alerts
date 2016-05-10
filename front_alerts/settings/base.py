@@ -108,11 +108,6 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK', None)
-GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN', None)
-GITHUB_API_USER = os.getenv('GITHUB_API_USER', None)
-GITHUB_REPO = os.getenv('GITHUB_REPO', "front_alerts")
-GITHUB_OWNER = os.getenv('GITHUB_OWNER', "pleasedontbelong")
-
 
 LOGGING = {
     'version': 1,
@@ -132,3 +127,17 @@ LOGGING = {
 }
 
 SLACK_DRY_RUN = False
+
+MESSAGES_ROUTING = {
+    "default": {
+        "github_api_token": os.getenv('GITHUB_API_TOKEN', None),
+        "github_api_user": os.getenv('GITHUB_API_USER', None),
+        "github_repo": os.getenv('GITHUB_REPO', "front_alerts"),
+        "github_owner": os.getenv('GITHUB_OWNER', "pleasedontbelong")
+    },
+    "frontend": {
+        "github_labels": ["comp:frontend"],
+        "slack_channels": ["#frontend-alerts"],
+        "review_request_labels": ["PR: Ready for review"]
+    }
+}
