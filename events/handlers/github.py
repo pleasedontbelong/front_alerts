@@ -1,7 +1,9 @@
 import json
+import logging
 from front_alerts import slack
 from front_alerts import github
 from front_alerts.constants import FRONTEND_LABELS, REVIEW_REQUEST_LABEL
+from django.conf import settings
 
 
 class GithubEvent(object):
@@ -18,9 +20,20 @@ class GithubEvent(object):
     def get_attachments(self, payload):
         return None
 
+    def get_event_id(self, payload):
+        return ""
+
+    def get_event_name(self, payload):
+        return u"{}-{}".format(self.EVENT_NAME, payload['action'])
+
     def to_slack(self, payload):
         if self.should_alert(payload):
-            slack.post(content=self.get_content(payload), attachments=self.get_attachments(payload))
+            content = self.get_content(payload)
+            attachments = self.get_attachments(payload)
+            if not settings.SLACK_DRY_RUN:
+                slack.post(content=content, attachments=attachments)
+            else:
+                logging.warning('CONTENT: %s\tATTACHMENTS: %s' % (content, attachments))
 
 
 class Issues(GithubEvent):
@@ -37,7 +50,7 @@ class Issues(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            return ":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
+            return u":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['issue']['number'],
                 title=payload['issue']['title'],
                 issue_url=payload['issue']['html_url'],
@@ -46,12 +59,15 @@ class Issues(GithubEvent):
             )
         return ""
 
+    def get_event_id(self, payload):
+        return payload['issue']['number']
+
     def get_attachments(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return None
 
-        plain = "Issue #{number} {action} {issue_url}: {title}\n{content}".format(
+        plain = u"Issue #{number} {action} {issue_url}: {title}\n{content}".format(
             issue_url=payload['issue']['html_url'],
             number=payload['issue']['number'],
             action=payload['action'],
@@ -59,7 +75,7 @@ class Issues(GithubEvent):
             content=payload['issue']['body'][:140]
         )
         return [{
-            "author_name": "Issue {}".format(payload['action']),
+            "author_name": u"Issue {}".format(payload['action']),
             "fallback": plain,
             "color": "#f4a62a",
             "title": payload['issue']['title'],
@@ -87,7 +103,7 @@ class PullRequests(GithubEvent):
     def get_content(self, payload):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
-            content = ":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
+            content = u":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
                 pr_url=payload['pull_request']['html_url'],
@@ -99,13 +115,16 @@ class PullRequests(GithubEvent):
             return content
 
         if action == "synchronize":
-            return ":pencil2: New commits on <{pr_url}|#{number} {title}>".format(
+            return u":pencil2: New commits on <{pr_url}|#{number} {title}>".format(
                 pr_url=payload['pull_request']['html_url'],
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
             )
 
         return ""
+
+    def get_event_id(self, payload):
+        return payload['pull_request']['number']
 
     def get_attachments(self, payload):
         action = payload['action']
@@ -115,7 +134,7 @@ class PullRequests(GithubEvent):
         if action == "synchronize":
             return None
 
-        plain = "Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
+        plain = u"Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
             pr_url=payload['pull_request']['html_url'],
             number=payload['pull_request']['number'],
             action=action,
@@ -123,7 +142,7 @@ class PullRequests(GithubEvent):
             content=payload['pull_request']['body'][:140]
         )
         return [{
-            "author_name": "Pull Request {}".format(action),
+            "author_name": u"Pull Request {}".format(action),
             "fallback": plain,
             "color": "#2980b9",
             "title": payload['pull_request']['title'],
@@ -149,14 +168,14 @@ class PullRequestsComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        plain = "@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
+        plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
             commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "author_name": "@{} commented on @{}'s Pull Request Code #{} {}".format(
+            "author_name": u"@{} commented on @{}'s Pull Request Code #{} {}".format(
                 payload['comment']['user']['login'],
                 payload['pull_request']['user']['login'],
                 payload['pull_request']['number'],
@@ -177,6 +196,9 @@ class PullRequestsComment(GithubEvent):
             ]
         }]
 
+    def get_event_id(self, payload):
+        return payload['pull_request']['number']
+
 
 class IssueComment(GithubEvent):
 
@@ -188,7 +210,7 @@ class IssueComment(GithubEvent):
         return any([label for label in self.labels if label in FRONTEND_LABELS])
 
     def get_attachments(self, payload):
-        action_title = "@{} commented on @{}'s ".format(
+        action_title = u"@{} commented on @{}'s ".format(
             payload['comment']['user']['login'],
             payload['issue']['user']['login']
         )
@@ -199,14 +221,14 @@ class IssueComment(GithubEvent):
         else:
             action_title += "Issue"
             color = "#f6bb5a"
-        plain = "{action_title} #{number} {comment_url}: \n{content}".format(
+        plain = u"{action_title} #{number} {comment_url}: \n{content}".format(
             action_title=action_title,
             comment_url=payload['comment']['html_url'],
             number=payload['issue']['number'],
             content=payload['comment']['body'][:140]
         )
         return [{
-            "title": "{} #{} {}".format(
+            "title": u"{} #{} {}".format(
                 action_title,
                 payload['issue']['number'],
                 payload['issue']['title'],
@@ -224,6 +246,9 @@ class IssueComment(GithubEvent):
             ]
         }]
 
+    def get_event_id(self, payload):
+        return payload['issue']['number']
+
 
 class GithubRequestEventHandler(object):
 
@@ -234,15 +259,27 @@ class GithubRequestEventHandler(object):
         IssueComment.EVENT_NAME: IssueComment
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, request, *args, **kwargs):
         self.payload = None
         self.action = ""
-        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
-
-    def parse(self, request):
-        self.action = request.META['HTTP_X_GITHUB_EVENT']
+        self.request = request
+        self.action = self.request.META['HTTP_X_GITHUB_EVENT']
         if self.action not in self.EVENT_MAP:
             return None
-        self.payload = json.loads(request.body)
+        self.payload = json.loads(self.request.body)
         self.event_class = self.EVENT_MAP[self.action]()
+        super(GithubRequestEventHandler, self).__init__(*args, **kwargs)
+
+    def parse(self):
         self.event_class.to_slack(self.payload)
+
+    def should_alert(self):
+        return self.event_class.should_alert(self.payload)
+
+    @property
+    def event_id(self):
+        return self.event_class.get_event_id(self.payload)
+
+    @property
+    def event_name(self):
+        return self.event_class.get_event_name(self.payload)

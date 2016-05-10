@@ -1,4 +1,6 @@
 import json
+import logging
+from django.conf import settings
 from front_alerts import slack
 from front_alerts import github
 from front_alerts.constants import FRONTEND_LABELS
@@ -18,7 +20,11 @@ class JenkinsRequestEventHandler(object):
         self.pr_labels = github.extract_labels(self.issue)
 
         if any([label for label in self.pr_labels if label in FRONTEND_LABELS]):
-            slack.post(attachments=self.get_attachments(payload))
+            attachments = self.get_attachments(payload)
+            if not settings.SLACK_DRY_RUN:
+                slack.post(attachments=attachments)
+            else:
+                logging.warning('Jenkins \tATTACHMENTS: %s' % attachments)
 
     def get_attachments(self, payload):
         plain = "Jenkins Job {} {}".format(

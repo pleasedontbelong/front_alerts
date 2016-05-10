@@ -11,6 +11,8 @@ class Event(models.Model):
     parsed_date = models.DateTimeField(blank=True, null=True)
     status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
                                               default=EVENT_STATUS.RECEIVED)
+    event_name = models.CharField(max_length=150, blank=True, null=True)
+    event_id = models.CharField(max_length=50, blank=True, null=True)
 
     def __unicode__(self):
         return "%s %s" % (self.status, self.received_date)
