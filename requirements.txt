@@ -8,3 +8,4 @@ requests==2.9.1
 jsonfield==1.0.3
 django-extended-choices==1.0.7
 django-extensions==1.6.6
+mock==2.0.0

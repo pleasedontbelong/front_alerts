@@ -1,5 +1,4 @@
-# from django.test import TestCase
-from unittest import TestCase
+from django.test import TestCase
 from django.test import Client
 from events.models import Event
 from .fixtures import issue_labeled_payload, issue_opened_payload
@@ -17,7 +16,7 @@ class IssuesEventsTestCase(TestCase):
             content_type="application/json")
         self.assertEquals(response.status_code, 200)
         event = Event.objects.get(event_id="2")
-        self.assertEquals(event.event_name, "issues_opened")
+        self.assertEquals(event.event_name, "issues-opened")
 
 
 class IssueLabelEventTestCase(TestCase):
@@ -26,11 +25,11 @@ class IssueLabelEventTestCase(TestCase):
         self.client = Client(HTTP_X_GITHUB_EVENT='issues')
         self.payload = issue_labeled_payload
 
-    def test_opened(self):
+    def test_labeled(self):
         response = self.client.post(
             '/github_event',
             data=self.payload,
             content_type="application/json")
         self.assertEquals(response.status_code, 200)
         event = Event.objects.get(event_id="2444")
-        self.assertEquals(event.event_name, "issues_labeled")
+        self.assertEquals(event.event_name, "issues-labeled")

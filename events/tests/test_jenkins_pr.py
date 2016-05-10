@@ -3,6 +3,8 @@ import json
 from unittest import TestCase
 from django.test.client import RequestFactory
 from events.handlers.jenkins import JenkinsRequestEventHandler
+from mock import patch
+from front_alerts.constants import FRONTEND_LABELS
 
 
 class PullRequestsEventsTestCase(TestCase):
@@ -45,7 +47,19 @@ class PullRequestsEventsTestCase(TestCase):
             }
         }
 
-    def test_opened(self):
+    @patch('events.handlers.jenkins.github.get_issue_labels', lambda issue_number: FRONTEND_LABELS)
+    @patch('events.handlers.jenkins.github.get_issue')
+    def test_opened(self, get_issue_mock):
+        get_issue_mock.return_value = {
+            'title': "Test Issue",
+            'pull_request': {
+                'html_url': "http://test.com"
+            },
+            'user': {
+                'login': "john"
+            },
+            'labels': [{'name': label for label in FRONTEND_LABELS}]
+        }
         request = self.factory.post(
             '/',
             data=json.dumps(self.payload),

@@ -24,7 +24,7 @@ class GithubEvent(object):
         return ""
 
     def get_event_name(self, payload):
-        return u"{}_{}".format(self.EVENT_NAME, payload['action'])
+        return u"{}-{}".format(self.EVENT_NAME, payload['action'])
 
     def to_slack(self, payload):
         if self.should_alert(payload):
