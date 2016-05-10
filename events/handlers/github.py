@@ -3,6 +3,8 @@ import logging
 from front_alerts import slack
 from front_alerts import github
 from django.conf import settings
+from .exceptions import EventNotHandled
+logger = logging.getLogger('django')
 
 
 class GithubEvent(object):
@@ -32,7 +34,9 @@ class GithubEvent(object):
             for channel in slack_channels:
                 slack.post(content=content, channel=channel, attachments=attachments)
         else:
-            logging.warning('CONTENT: %s\tATTACHMENTS: %s' % (content, attachments))
+            logger.info('\nCHANNELS: %s\nCONTENT: %s\nATTACHMENTS: %s' % (
+                ",".join(slack_channels), content, attachments)
+            )
 
 
 class Issues(GithubEvent):
@@ -263,7 +267,7 @@ class GithubRequestEventHandler(object):
         self.request = request
         self.action = self.request.META['HTTP_X_GITHUB_EVENT']
         if self.action not in self.EVENT_MAP:
-            return None
+            raise EventNotHandled("Event '%s' is not handled" % self.action)
         self.payload = json.loads(self.request.body)
         self.event_class = self.EVENT_MAP[self.action]()
 

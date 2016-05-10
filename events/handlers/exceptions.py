@@ -1,0 +1,2 @@
+class EventNotHandled(Exception):
+    pass
