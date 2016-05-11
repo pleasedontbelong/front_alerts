@@ -1,17 +1,13 @@
-# from django.test import TestCase
 import json
-from unittest import TestCase
-from django.test.client import RequestFactory
-from events.handlers.jenkins import JenkinsRequestEventHandler
+from django.test import TestCase, Client
+from events.models import Event
 from mock import patch
-from front_alerts.constants import FRONTEND_LABELS
 
 
-class PullRequestsEventsTestCase(TestCase):
+class JenkinsEventsTestCase(TestCase):
     def setUp(self):
-        self.factory = RequestFactory()
-        self.parser = JenkinsRequestEventHandler()
-        self.payload = {
+        self.client = Client(HTTP_X_GITHUB_EVENT='issues')
+        self.payload = json.dumps({
             "name": "botify-pull-request",
             "url": "job/botify-pull-request/",
             "build": {
@@ -40,16 +36,15 @@ class PullRequestsEventsTestCase(TestCase):
                     "ghprbActualCommitAuthorEmail": "adele.delamarche@gmail.com",
                     "ghprbPullId": "2262",
                     "ghprbPullTitle": "Feature/2205/allow user to change his credit card",
-                    "ghprbPullDescription": "GitHub pull request #2262 of commit d563eb491dc46cef7c2b77abb559bd43143d0b46 automatically merged."
+                    "ghprbPullDescription": "GitHub pull request #2262 of commit d563eb491 automatically merged."
                 },
                 "log": "",
                 "artifacts": {}
             }
-        }
+        })
 
-    @patch('events.handlers.jenkins.github.get_issue_labels', lambda issue_number: FRONTEND_LABELS)
     @patch('events.handlers.jenkins.github.get_issue')
-    def test_opened(self, get_issue_mock):
+    def test_build_finished(self, get_issue_mock):
         get_issue_mock.return_value = {
             'title': "Test Issue",
             'pull_request': {
@@ -58,10 +53,12 @@ class PullRequestsEventsTestCase(TestCase):
             'user': {
                 'login': "john"
             },
-            'labels': [{'name': label for label in FRONTEND_LABELS}]
+            'labels': [{'name': "my-label"}]
         }
-        request = self.factory.post(
-            '/',
-            data=json.dumps(self.payload),
+        response = self.client.post(
+            '/jenkins_events',
+            data=self.payload,
             content_type="application/json")
-        self.parser.parse(request)
+        self.assertEquals(response.status_code, 200)
+        event = Event.objects.get(event_id="2262")
+        self.assertEquals(event.event_name, "jenkins_build")

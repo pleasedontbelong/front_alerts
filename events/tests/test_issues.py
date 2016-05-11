@@ -1,5 +1,4 @@
-from django.test import TestCase
-from django.test import Client
+from django.test import TestCase, Client
 from events.models import Event
 from .fixtures import issue_labeled_payload, issue_opened_payload
 

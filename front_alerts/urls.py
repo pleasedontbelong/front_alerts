@@ -9,7 +9,7 @@ urlpatterns = patterns(
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^jenkins_pr$', JenkinsPRView.as_view(), name='jenkins-pr'),
-    url(r'^github_event$', HookView.as_view(), name='home'),
+    url(r'^jenkins_events$', JenkinsPRView.as_view(), name='jenkins-events'),
+    url(r'^github_event$', HookView.as_view(), name='github-events'),
 
 )

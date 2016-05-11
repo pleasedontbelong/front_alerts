@@ -1,45 +1,10 @@
 import json
-import logging
-from front_alerts import slack
 from front_alerts import github
-from django.conf import settings
 from .exceptions import EventNotHandled
-logger = logging.getLogger('django')
+from .core import EventHandler
 
 
-class GithubEvent(object):
-
-    def should_send(self, payload, trigger_labels):
-        """
-        Check if we should send an alert to slack
-        """
-        return False
-
-    def get_content(self, payload, review_request_label):
-        return ""
-
-    def get_attachments(self, payload):
-        return None
-
-    def get_event_id(self, payload):
-        return ""
-
-    def get_event_name(self, payload):
-        return u"{}-{}".format(self.EVENT_NAME, payload['action'])
-
-    def send(self, payload, slack_channels, review_request_label):
-        content = self.get_content(payload, review_request_label)
-        attachments = self.get_attachments(payload)
-        if not settings.SLACK_DRY_RUN:
-            for channel in slack_channels:
-                slack.post(content=content, channel=channel, attachments=attachments)
-        else:
-            logger.info('\nCHANNELS: %s\nCONTENT: %s\nATTACHMENTS: %s' % (
-                ",".join(slack_channels), content, attachments)
-            )
-
-
-class Issues(GithubEvent):
+class Issues(EventHandler):
 
     EVENT_NAME = "issues"
 
@@ -94,7 +59,7 @@ class Issues(GithubEvent):
         }]
 
 
-class PullRequests(GithubEvent):
+class PullRequests(EventHandler):
 
     EVENT_NAME = "pull_request"
 
@@ -113,7 +78,6 @@ class PullRequests(GithubEvent):
                 action=action,
                 label=payload['label']['name']
             )
-            review_request_label = kwargs.get('review_request_label', '')
             if action == "labeled" and payload['label']['name'] == review_request_label:
                 content = content + " <!here> Review Requested"
             return content
@@ -162,7 +126,7 @@ class PullRequests(GithubEvent):
         }]
 
 
-class PullRequestsComment(GithubEvent):
+class PullRequestsComment(EventHandler):
 
     EVENT_NAME = "pull_request_review_comment"
 
@@ -204,7 +168,7 @@ class PullRequestsComment(GithubEvent):
         return payload['pull_request']['number']
 
 
-class IssueComment(GithubEvent):
+class IssueComment(EventHandler):
 
     EVENT_NAME = "issue_comment"
 

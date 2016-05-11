@@ -4,7 +4,7 @@ from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .handlers.github import GithubRequestEventHandler
-from .handlers.jenkins import JenkinsRequestEventHandler
+from .handlers.jenkins import JenkinsEventHandler
 from .handlers.exceptions import EventNotHandled
 from .models import Event
 from .dispatcher import Dispatcher
@@ -45,6 +45,13 @@ class JenkinsPRView(View):
         return HttpResponse("OK")
 
     def post(self, request):
-        event = JenkinsRequestEventHandler()
-        event.parse(request)
+        event = JenkinsEventHandler(request)
+        dispatcher = Dispatcher()
+        dispatcher.dispatch(event)
+        if dispatcher.sent:
+            Event.objects.create(
+                event_data=event.payload,
+                event_name=event.event_name,
+                event_id=event.event_id
+            )
         return HttpResponse("OK")

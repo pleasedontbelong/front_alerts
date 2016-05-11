@@ -1,34 +1,20 @@
 import json
-import logging
-from django.conf import settings
-from front_alerts import slack
 from front_alerts import github
-from front_alerts.constants import FRONTEND_LABELS
+from .core import EventHandler
 
 
-class JenkinsRequestEventHandler(object):
+class JenkinsBuildFinishedEvent(EventHandler):
 
     def __init__(self, *args, **kwargs):
         self.payload = None
-        super(JenkinsRequestEventHandler, self).__init__(*args, **kwargs)
-
-    def parse(self, request):
-        payload = json.loads(request.body)
-        pr_id = payload['build']['parameters']['ghprbPullId']
-
-        self.issue = github.get_issue(pr_id)
-        self.pr_labels = github.extract_labels(self.issue)
-
-        if any([label for label in self.pr_labels if label in FRONTEND_LABELS]):
-            attachments = self.get_attachments(payload)
-            if not settings.SLACK_DRY_RUN:
-                slack.post(attachments=attachments)
-            else:
-                logging.warning('Jenkins \tATTACHMENTS: %s' % attachments)
+        self._labels = None
+        self._issue = None
+        super(JenkinsBuildFinishedEvent, self).__init__(*args, **kwargs)
 
     def get_attachments(self, payload):
+        issue = self.get_issue(payload)
         plain = "Jenkins Job {} {}".format(
-            self.issue['title'],
+            issue['title'],
             payload['build']['status']
         )
         return [{
@@ -36,7 +22,51 @@ class JenkinsRequestEventHandler(object):
             "author_link": payload['build']['full_url'],
             "fallback": plain,
             "color": "#c0392b" if payload['build']['status'] == "FAILURE" else "#2ecc71",
-            "title": self.issue['title'],
-            "title_link": self.issue['pull_request']['html_url'],
-            "pretext": "@{} jenkins finished your PR's tests".format(self.issue['user']['login'])
+            "title": issue['title'],
+            "title_link": issue['pull_request']['html_url'],
+            "pretext": "@{} jenkins finished your PR's tests".format(issue['user']['login'])
         }]
+
+    def get_labels(self, payload):
+        if not self._labels:
+            issue = self.get_issue(payload)
+            self._labels = github.extract_labels(issue)
+        return self._labels
+
+    def get_issue(self, payload):
+        if not self._issue:
+            pr_id = payload['build']['parameters']['ghprbPullId']
+            self._issue = github.get_issue(pr_id)
+        return self._issue
+
+    def should_send(self, payload, trigger_labels):
+        pr_labels = self.get_labels(payload)
+        return any([label for label in pr_labels if label in trigger_labels])
+
+    def get_event_id(self, payload):
+        return payload['build']['parameters']['ghprbPullId']
+
+    def get_event_name(self, payload):
+        return u"jenkins_build"
+
+
+class JenkinsEventHandler(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.payload = json.loads(self.request.body)
+        self.event_class = JenkinsBuildFinishedEvent()
+
+    def send(self, slack_channels, review_request_label):
+        self.event_class.send(self.payload, slack_channels, review_request_label)
+
+    def should_send(self, trigger_labels):
+        return self.event_class.should_send(self.payload, trigger_labels)
+
+    @property
+    def event_id(self):
+        return self.event_class.get_event_id(self.payload)
+
+    @property
+    def event_name(self):
+        return self.event_class.get_event_name(self.payload)

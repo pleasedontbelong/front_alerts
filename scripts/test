@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+python manage.py test --failfast --settings front_alerts.settings.test $*

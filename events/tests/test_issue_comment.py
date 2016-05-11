@@ -3,7 +3,6 @@ from django.test import Client
 from .fixtures import issue_comment_payload
 from events.models import Event
 from mock import patch
-from front_alerts.constants import FRONTEND_LABELS
 
 
 class PullRequestsEventsTestCase(TestCase):
@@ -11,7 +10,7 @@ class PullRequestsEventsTestCase(TestCase):
         self.client = Client(HTTP_X_GITHUB_EVENT='issue_comment')
         self.payload = issue_comment_payload
 
-    @patch('events.handlers.github.github.get_issue_labels', lambda issue_number: FRONTEND_LABELS)
+    @patch('events.handlers.github.github.get_issue_labels', lambda issue_number: ["test"])
     def test_issue_comment(self):
         response = self.client.post(
             '/github_event',
