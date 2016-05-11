@@ -1036,3 +1036,77 @@ pull_request_coment_payload = json.dumps({
         "site_admin": False
     }
 })
+
+
+sentry_error_payload = json.dumps({
+    "project": "production-front",
+    "project_name": "production/front",
+    "culprit": "raven.scripts.runner in main",
+    "level": "error",
+    "url": "https://app.getsentry.com/botify/production-front/issues/120813073/",
+    "logger": "",
+    "message": "This is an example python exception",
+    "id": "120813073",
+    "event": {
+        "received": 1462977957.0,
+        "sentry.interfaces.User": {
+            "username": "getsentry",
+            "id": "1671",
+            "email": "foo@example.com"
+        },
+        "errors": [],
+        "version": "5",
+        "extra": {
+            "emptyList": [],
+            "unauthorized": None,
+            "emptyMap": {},
+            "url": "http://example.org/foo/bar/",
+            "results": [1, 2, 3, 4, 5],
+            "length": 10837790,
+            "session": {
+                "foo": "bar"
+            }
+        },
+        "fingerprint": ["{{ default }}"],
+        "modules": {
+            "my.package": "1.0.0"
+        },
+        "sentry.interfaces.Http": {
+            "cookies": [
+                ["foo", "bar"],
+                ["biz", "baz"]
+            ],
+            "url": "http://example.com/foo",
+            "headers": [
+                ["Content-Type", "application/json"],
+                ["Referer", "http://example.com"],
+                ["User-Agent", "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWeb"]
+            ],
+            "env": {
+                "ENV": "prod"
+            },
+            "query_string": "foo=bar",
+            "data": "{\"hello\": \"world\"}",
+            "method": "GET"
+        },
+        "sentry.interfaces.Template": {
+            "abs_path": "/srv/example/templates/debug_toolbar/base.html",
+            "pre_context": ["{% endif %}\n", "<script src=\"{% s"],
+            "post_context": ["     {{ toolbar.config.ROOT_TAG_EX"],
+            "filename": "debug_toolbar/base.html",
+            "lineno": 14,
+            "context_line": "     data-store-id=\"{{ toolbar.sto"
+        },
+        "_ref_version": 2,
+        "_ref": 58595,
+        "type": "default",
+        "tags": [
+            ["browser", "Chrome 28.0"],
+            ["device", "Other"],
+            ["level", "error"],
+            ["os", "Windows 8"],
+            ["sentry:user", "id:1671"],
+            ["url", "http://example.com/foo"]
+        ]
+    }
+})

@@ -145,6 +145,7 @@ MESSAGES_ROUTING = {
     "frontend": {
         "github_labels": ["comp:frontend"],
         "slack_channels": ["#frontend-alerts"],
-        "review_request_labels": ["PR: Ready for review"]
+        "review_request_labels": ["PR: Ready for review"],
+        "sentry_projects": ["production-front"]
     }
 }

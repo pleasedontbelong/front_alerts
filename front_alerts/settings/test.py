@@ -2,7 +2,7 @@ from .base import *  # NOQA
 from mock import ANY
 
 DEBUG = True
-SLACK_DRY_RUN = True
+SLACK_DRY_RUN = False
 
 MESSAGES_ROUTING = {
     "default": {
@@ -14,7 +14,8 @@ MESSAGES_ROUTING = {
     "frontend": {
         "github_labels": [ANY],
         "slack_channels": ["#ops-playground"],
-        "review_request_labels": ["test Ready for review"]
+        "review_request_labels": ["test Ready for review"],
+        "sentry_projects": [ANY]
     }
 }
 
