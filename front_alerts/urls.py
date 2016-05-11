@@ -10,7 +10,7 @@ urlpatterns = patterns(
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^jenkins_events$', JenkinsPRView.as_view(), name='jenkins-events'),
-    url(r'^github_event$', GithubView.as_view(), name='github-events'),
-    url(r'^sentry_event$', SentryView.as_view(), name='github-events'),
+    url(r'^github_events$', GithubView.as_view(), name='github-events'),
+    url(r'^sentry_events$', SentryView.as_view(), name='github-events'),
 
 )
