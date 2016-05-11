@@ -6,16 +6,16 @@ logger = logging.getLogger('django')
 
 class EventHandler(object):
 
-    def should_send(self, payload, trigger_labels):
+    def should_send(self, payload, route_config):
         """
         Check if we should send an alert to slack
         """
         return False
 
-    def get_content(self, payload, review_request_label):
+    def get_content(self, payload, route_config):
         return ""
 
-    def get_attachments(self, payload):
+    def get_attachments(self, payload, route_config):
         return None
 
     def get_event_id(self, payload):
@@ -24,9 +24,10 @@ class EventHandler(object):
     def get_event_name(self, payload):
         return u"{}-{}".format(self.EVENT_NAME, payload['action'])
 
-    def send(self, payload, slack_channels, review_request_label):
-        content = self.get_content(payload, review_request_label)
-        attachments = self.get_attachments(payload)
+    def send(self, payload, route_config):
+        slack_channels = route_config.get('slack_channels')
+        content = self.get_content(payload, route_config)
+        attachments = self.get_attachments(payload, route_config)
         if not settings.SLACK_DRY_RUN:
             for channel in slack_channels:
                 slack.post(content=content, channel=channel, attachments=attachments)

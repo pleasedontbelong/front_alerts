@@ -1,8 +1,12 @@
 from django.conf import settings
+from .models import Event
 
 
 class Dispatcher(object):
-    def __init__(self):
+
+    def __init__(self, event_handler_cls, request):
+        self.sent = False
+        # initialize all the event routes
         config = settings.MESSAGES_ROUTING.copy()
         default_config = config.pop('default')
         self.routes = []
@@ -10,13 +14,20 @@ class Dispatcher(object):
             self.routes.append(
                 EventRoute(default_config, route_name, route_config)
             )
-        self.sent = False
 
-    def dispatch(self, event):
+        # initialize the event handler
+        self.event_handler = event_handler_cls(request)
+
+    def dispatch(self):
         for route in self.routes:
-            if route.should_send(event):
-                self.sent = True
-                route.send(event)
+            if route.should_send(self.event_handler):
+                route.send(self.event_handler)
+
+                Event.objects.create(
+                    event_data=self.event_handler.payload,
+                    event_name=self.event_handler.event_name,
+                    event_id=self.event_handler.event_id
+                )
 
 
 class EventRoute(object):
@@ -26,7 +37,7 @@ class EventRoute(object):
         self.route_name = route_name
 
     def should_send(self, event):
-        return event.should_send(trigger_labels=self.config.get('github_labels'))
+        return event.should_send(route_config=self.config)
 
     def send(self, event):
-        event.send(self.config.get("slack_channels"), self.config.get("review_request_label"))
+        event.send(self.config)

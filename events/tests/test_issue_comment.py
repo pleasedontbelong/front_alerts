@@ -10,7 +10,7 @@ class PullRequestsEventsTestCase(TestCase):
         self.client = Client(HTTP_X_GITHUB_EVENT='issue_comment')
         self.payload = issue_comment_payload
 
-    @patch('events.handlers.github.github.get_issue_labels', lambda issue_number: ["test"])
+    @patch('events.handlers.github.github.get_issue_labels', lambda issue_number, route_config: ["test"])
     def test_issue_comment(self):
         response = self.client.post(
             '/github_event',

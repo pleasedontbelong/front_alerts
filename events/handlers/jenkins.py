@@ -11,8 +11,8 @@ class JenkinsBuildFinishedEvent(EventHandler):
         self._issue = None
         super(JenkinsBuildFinishedEvent, self).__init__(*args, **kwargs)
 
-    def get_attachments(self, payload):
-        issue = self.get_issue(payload)
+    def get_attachments(self, payload, route_config):
+        issue = self.get_issue(payload, route_config)
         plain = "Jenkins Job {} {}".format(
             issue['title'],
             payload['build']['status']
@@ -27,20 +27,21 @@ class JenkinsBuildFinishedEvent(EventHandler):
             "pretext": "@{} jenkins finished your PR's tests".format(issue['user']['login'])
         }]
 
-    def get_labels(self, payload):
+    def get_labels(self, payload, route_config):
         if not self._labels:
-            issue = self.get_issue(payload)
+            issue = self.get_issue(payload, route_config)
             self._labels = github.extract_labels(issue)
         return self._labels
 
-    def get_issue(self, payload):
+    def get_issue(self, payload, route_config):
         if not self._issue:
             pr_id = payload['build']['parameters']['ghprbPullId']
-            self._issue = github.get_issue(pr_id)
+            self._issue = github.get_issue(pr_id, route_config)
         return self._issue
 
-    def should_send(self, payload, trigger_labels):
-        pr_labels = self.get_labels(payload)
+    def should_send(self, payload, route_config):
+        trigger_labels = route_config.get('github_labels')
+        pr_labels = self.get_labels(payload, route_config)
         return any([label for label in pr_labels if label in trigger_labels])
 
     def get_event_id(self, payload):
@@ -57,11 +58,11 @@ class JenkinsEventHandler(object):
         self.payload = json.loads(self.request.body)
         self.event_class = JenkinsBuildFinishedEvent()
 
-    def send(self, slack_channels, review_request_label):
-        self.event_class.send(self.payload, slack_channels, review_request_label)
+    def send(self, route_config):
+        self.event_class.send(self.payload, route_config)
 
-    def should_send(self, trigger_labels):
-        return self.event_class.should_send(self.payload, trigger_labels)
+    def should_send(self, route_config):
+        return self.event_class.should_send(self.payload, route_config)
 
     @property
     def event_id(self):

@@ -1,19 +1,18 @@
 import requests
 import json
 from requests.auth import HTTPBasicAuth
-from django.conf import settings
 
 
-def get_issue(issue_number):
+def get_issue(issue_number, route_config):
     response = requests.get(
         'https://api.github.com/repos/{owner}/{repo}/issues/{number}'.format(
-            owner=settings.GITHUB_OWNER,
-            repo=settings.GITHUB_REPO,
+            owner=route_config.get('github_owner'),
+            repo=route_config.get('github_repo'),
             number=issue_number
         ),
         auth=HTTPBasicAuth(
-            settings.GITHUB_API_USER,
-            settings.GITHUB_API_TOKEN
+            route_config.get('github_api_user'),
+            route_config.get('github_api_token')
         )
     )
     response.raise_for_status()
@@ -24,6 +23,6 @@ def extract_labels(issue_data):
     return [label['name'] for label in issue_data['labels']]
 
 
-def get_issue_labels(issue_number):
-    issue = get_issue(issue_number)
+def get_issue_labels(issue_number, route_config):
+    issue = get_issue(issue_number, route_config)
     return extract_labels(issue)

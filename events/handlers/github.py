@@ -8,10 +8,11 @@ class Issues(EventHandler):
 
     EVENT_NAME = "issues"
 
-    def should_send(self, payload, trigger_labels):
+    def should_send(self, payload, route_config):
         """
         If issue has one of the FRONTEND_LABELS
         """
+        trigger_labels = route_config.get('github_labels')
         labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in labels if label in trigger_labels])
 
@@ -30,7 +31,7 @@ class Issues(EventHandler):
     def get_event_id(self, payload):
         return payload['issue']['number']
 
-    def get_attachments(self, payload):
+    def get_attachments(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return None
@@ -63,9 +64,10 @@ class PullRequests(EventHandler):
 
     EVENT_NAME = "pull_request"
 
-    def should_send(self, payload, trigger_labels):
+    def should_send(self, payload, route_config):
         # get the labels from the issue object
-        self.labels = github.get_issue_labels(issue_number=payload['number'])
+        trigger_labels = route_config.get('github_labels')
+        self.labels = github.get_issue_labels(issue_number=payload['number'], route_config=route_config)
         return any([label for label in self.labels if label in trigger_labels])
 
     def get_content(self, payload, review_request_label):
@@ -94,7 +96,7 @@ class PullRequests(EventHandler):
     def get_event_id(self, payload):
         return payload['pull_request']['number']
 
-    def get_attachments(self, payload):
+    def get_attachments(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return None
@@ -130,12 +132,15 @@ class PullRequestsComment(EventHandler):
 
     EVENT_NAME = "pull_request_review_comment"
 
-    def should_send(self, payload, trigger_labels):
+    def should_send(self, payload, route_config):
         # get the labels from the issue object
-        self.labels = github.get_issue_labels(issue_number=payload['pull_request']['number'])
+        trigger_labels = route_config.get('github_labels')
+        self.labels = github.get_issue_labels(
+            issue_number=payload['pull_request']['number'],
+            route_config=route_config)
         return any([label for label in self.labels if label in trigger_labels])
 
-    def get_attachments(self, payload):
+    def get_attachments(self, payload, route_config):
         plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
             commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
@@ -172,12 +177,13 @@ class IssueComment(EventHandler):
 
     EVENT_NAME = "issue_comment"
 
-    def should_send(self, payload, trigger_labels):
+    def should_send(self, payload, route_config):
         # get the labels from the issue object
+        trigger_labels = route_config.get('github_labels')
         self.labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in self.labels if label in trigger_labels])
 
-    def get_attachments(self, payload):
+    def get_attachments(self, payload, route_config):
         action_title = u"@{} commented on @{}'s ".format(
             payload['comment']['user']['login'],
             payload['issue']['user']['login']
@@ -235,11 +241,11 @@ class GithubRequestEventHandler(object):
         self.payload = json.loads(self.request.body)
         self.event_class = self.EVENT_MAP[self.action]()
 
-    def send(self, slack_channels, review_request_label):
-        self.event_class.send(self.payload, slack_channels, review_request_label)
+    def send(self, route_config):
+        self.event_class.send(self.payload, route_config)
 
-    def should_send(self, trigger_labels):
-        return self.event_class.should_send(self.payload, trigger_labels)
+    def should_send(self, route_config):
+        return self.event_class.should_send(self.payload, route_config)
 
     @property
     def event_id(self):

@@ -13,7 +13,7 @@ MESSAGES_ROUTING = {
     },
     "frontend": {
         "github_labels": [ANY],
-        "slack_channels": ["#test-channel"],
+        "slack_channels": ["#ops-playground"],
         "review_request_labels": ["test Ready for review"]
     }
 }
