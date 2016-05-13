@@ -188,14 +188,23 @@ class IssueComment(EventHandler):
     EVENT_NAME = "issue_comment"
 
     def should_send(self, payload, route_config):
+        action = payload['action']
+        if action not in ["deleted", "created"]:
+            return False
         # get the labels from the issue object
         trigger_labels = route_config.get('github_labels')
         self.labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload, route_config):
-        action_title = u"@{} commented on @{}'s ".format(
+        action = payload['action']
+        if action == "deleted":
+            action = "deleted comment"
+        else:
+            action = "commented"
+        action_title = u"@{} {} on @{}'s ".format(
             payload['comment']['user']['login'],
+            action,
             payload['issue']['user']['login']
         )
 
