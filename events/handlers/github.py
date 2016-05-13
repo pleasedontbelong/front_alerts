@@ -16,7 +16,7 @@ class Issues(EventHandler):
         labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in labels if label in trigger_labels])
 
-    def get_content(self, payload, review_request_label):
+    def get_content(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return u":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
@@ -70,7 +70,7 @@ class PullRequests(EventHandler):
         self.labels = github.get_issue_labels(issue_number=payload['number'], route_config=route_config)
         return any([label for label in self.labels if label in trigger_labels])
 
-    def get_content(self, payload, review_request_label):
+    def get_content(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             content = u":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
@@ -80,7 +80,7 @@ class PullRequests(EventHandler):
                 action=action,
                 label=payload['label']['name']
             )
-            if action == "labeled" and payload['label']['name'] == review_request_label:
+            if action == "labeled" and payload['label']['name'] in route_config.get('review_request_labels'):
                 content = content + " <!here> Review Requested"
             return content
 
