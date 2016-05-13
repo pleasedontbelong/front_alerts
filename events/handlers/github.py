@@ -133,6 +133,10 @@ class PullRequestsComment(EventHandler):
     EVENT_NAME = "pull_request_review_comment"
 
     def should_send(self, payload, route_config):
+        action = payload['action']
+        if action not in ["deleted", "created"]:
+            return False
+
         # get the labels from the issue object
         trigger_labels = route_config.get('github_labels')
         self.labels = github.get_issue_labels(
@@ -141,7 +145,13 @@ class PullRequestsComment(EventHandler):
         return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload, route_config):
-        plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
+        action = payload['action']
+        if action == "deleted":
+            action = "deleted comment"
+        else:
+            action = "commented"
+        plain = u"@{commenter} {action} on PR #{number} {comment_url}: \n{content}".format(
+            action=action,
             commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
