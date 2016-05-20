@@ -16,7 +16,7 @@ class Issues(EventHandler):
         labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in labels if label in trigger_labels])
 
-    def get_content(self, payload, review_request_label):
+    def get_content(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             return u":label: Issue <{issue_url}|#{number} {title}> {action} *{label}*".format(
@@ -70,7 +70,7 @@ class PullRequests(EventHandler):
         self.labels = github.get_issue_labels(issue_number=payload['number'], route_config=route_config)
         return any([label for label in self.labels if label in trigger_labels])
 
-    def get_content(self, payload, review_request_label):
+    def get_content(self, payload, route_config):
         action = payload['action']
         if action in ('labeled', 'unlabeled'):
             content = u":label: Pull Request <{pr_url}|#{number} {title}> {action} *{label}*".format(
@@ -80,7 +80,7 @@ class PullRequests(EventHandler):
                 action=action,
                 label=payload['label']['name']
             )
-            if action == "labeled" and payload['label']['name'] == review_request_label:
+            if action == "labeled" and payload['label']['name'] in route_config.get('review_request_labels'):
                 content = content + " <!here> Review Requested"
             return content
 
@@ -133,6 +133,10 @@ class PullRequestsComment(EventHandler):
     EVENT_NAME = "pull_request_review_comment"
 
     def should_send(self, payload, route_config):
+        action = payload['action']
+        if action not in ["deleted", "created"]:
+            return False
+
         # get the labels from the issue object
         trigger_labels = route_config.get('github_labels')
         self.labels = github.get_issue_labels(
@@ -141,7 +145,13 @@ class PullRequestsComment(EventHandler):
         return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload, route_config):
-        plain = u"@{commenter} commented on PR #{number} {comment_url}: \n{content}".format(
+        action = payload['action']
+        if action == "deleted":
+            action = "deleted comment"
+        else:
+            action = "commented"
+        plain = u"@{commenter} {action} on PR #{number} {comment_url}: \n{content}".format(
+            action=action,
             commenter=payload['comment']['user']['login'],
             comment_url=payload['comment']['html_url'],
             number=payload['pull_request']['number'],
@@ -178,14 +188,23 @@ class IssueComment(EventHandler):
     EVENT_NAME = "issue_comment"
 
     def should_send(self, payload, route_config):
+        action = payload['action']
+        if action not in ["deleted", "created"]:
+            return False
         # get the labels from the issue object
         trigger_labels = route_config.get('github_labels')
         self.labels = [label['name'] for label in payload['issue']['labels']]
         return any([label for label in self.labels if label in trigger_labels])
 
     def get_attachments(self, payload, route_config):
-        action_title = u"@{} commented on @{}'s ".format(
+        action = payload['action']
+        if action == "deleted":
+            action = "deleted comment"
+        else:
+            action = "commented"
+        action_title = u"@{} {} on @{}'s ".format(
             payload['comment']['user']['login'],
+            action,
             payload['issue']['user']['login']
         )
 
