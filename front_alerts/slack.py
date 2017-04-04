@@ -5,7 +5,7 @@ from django.conf import settings
 
 def post(content="", channel="", attachments=None):
     r = requests.post(
-        settings.SLACK_WEBHOOK_URL,
+        settings.SLACK_WEBHOOK,
         data=json.dumps({
             "channel": channel,
             "text": content,

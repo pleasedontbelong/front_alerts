@@ -10,7 +10,7 @@ class IssuesEventsTestCase(TestCase):
 
     def test_opened(self):
         response = self.client.post(
-            '/github_event',
+            '/github_events',
             data=self.payload,
             content_type="application/json")
         self.assertEquals(response.status_code, 200)
@@ -26,7 +26,7 @@ class IssueLabelEventTestCase(TestCase):
 
     def test_labeled(self):
         response = self.client.post(
-            '/github_event',
+            '/github_events',
             data=self.payload,
             content_type="application/json")
         self.assertEquals(response.status_code, 200)

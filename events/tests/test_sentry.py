@@ -11,7 +11,7 @@ class IssueLabelEventTestCase(TestCase):
 
     def test_labeled(self):
         response = self.client.post(
-            '/sentry_event',
+            '/sentry_events',
             data=self.payload,
             content_type="application/json")
         self.assertEquals(response.status_code, 200)

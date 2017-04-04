@@ -2,7 +2,7 @@ from .base import *  # NOQA
 from mock import ANY
 
 DEBUG = True
-SLACK_DRY_RUN = False
+SLACK_DRY_RUN = True
 
 MESSAGES_ROUTING = {
     "default": {

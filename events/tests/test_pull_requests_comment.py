@@ -13,7 +13,7 @@ class PullRequestsEventsTestCase(TestCase):
     @patch('events.handlers.github.github.get_issue_labels', lambda issue_number, route_config: ["test"])
     def test_comment(self):
         response = self.client.post(
-            '/github_event',
+            '/github_events',
             data=self.payload,
             content_type="application/json")
         self.assertEquals(response.status_code, 200)
