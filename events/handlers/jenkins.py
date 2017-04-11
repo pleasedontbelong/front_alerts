@@ -1,6 +1,7 @@
 import json
 from front_alerts import github
 from .core import EventHandler
+from events.constants import SLACK_COLORS
 
 
 class JenkinsBuildFinishedEvent(EventHandler):
@@ -21,7 +22,7 @@ class JenkinsBuildFinishedEvent(EventHandler):
             "author_name": "Jenkins Job {}".format(payload['build']['status']),
             "author_link": payload['build']['full_url'],
             "fallback": plain,
-            "color": "#c0392b" if payload['build']['status'] == "FAILURE" else "#2ecc71",
+            "color": SLACK_COLORS.DANGER if payload['build']['status'] == "FAILURE" else SLACK_COLORS.SUCCESS,
             "title": issue['title'],
             "title_link": issue['pull_request']['html_url'],
             "pretext": "@{} jenkins finished your PR's tests".format(issue['user']['login'])

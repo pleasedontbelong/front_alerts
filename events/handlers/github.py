@@ -2,6 +2,7 @@ import json
 from front_alerts import github
 from .exceptions import EventNotHandled
 from .core import EventHandler
+from events.constants import SLACK_COLORS
 
 
 class Issues(EventHandler):
@@ -46,7 +47,7 @@ class Issues(EventHandler):
         return [{
             "author_name": u"Issue {}".format(payload['action']),
             "fallback": plain,
-            "color": "#f4a62a",
+            "color": SLACK_COLORS.WARNING,
             "title": payload['issue']['title'],
             "title_link": payload['issue']['html_url'],
             "text": payload['issue']['body'][:140],
@@ -114,7 +115,7 @@ class PullRequests(EventHandler):
         return [{
             "author_name": u"Pull Request {}".format(action),
             "fallback": plain,
-            "color": "#2980b9",
+            "color": SLACK_COLORS.PRIMARY,
             "title": payload['pull_request']['title'],
             "title_link": payload['pull_request']['html_url'],
             "text": payload['pull_request']['body'][:140],
@@ -166,7 +167,7 @@ class PullRequestsComment(EventHandler):
             ),
             "author_link": payload['pull_request']['html_url'],
             "fallback": plain,
-            "color": "#16a085",
+            "color": SLACK_COLORS.INFO,
             "title": payload['comment']['path'],
             "title_link": payload['comment']['html_url'],
             "text": payload['comment']['body'][:140],
@@ -243,13 +244,61 @@ class IssueComment(EventHandler):
         return payload['issue']['number']
 
 
+class PullRequestsReview(EventHandler):
+
+    EVENT_NAME = "pull_request_review"
+
+    def should_send(self, payload, route_config):
+        action = payload['action']
+        if action not in ["submitted"]:
+            return False
+
+        # get the labels from the issue object
+        trigger_labels = route_config.get('github_labels')
+        self.labels = github.get_issue_labels(
+            issue_number=payload['pull_request']['number'],
+            route_config=route_config)
+        return any([label for label in self.labels if label in trigger_labels])
+
+    def get_content(self, payload, route_config):
+        states_map = {
+            "commented": {
+                "action": "made comments on",
+                "icon": ":speech_balloon:"
+            },
+            "changes_requested": {
+                "action": "requested changes on",
+                "icon": ":memo:"
+            },
+            "approved": {
+                "action": "approved",
+                "icon": ":white_check_mark:"
+            }
+        }
+        state = payload['review']['state']
+
+        return u"{icon} @{reviewer} {action} @{author} 's PR <{pr_url}|#{number} {title}>".format(
+            icon=states_map[state]["icon"],
+            reviewer=payload['review']['user']['login'],
+            action=states_map[state]["action"],
+            author=payload['pull_request']['user']['login'],
+            pr_url=payload['pull_request']['html_url'],
+            number=payload['pull_request']['number'],
+            title=payload['pull_request']['title'],
+        )
+
+    def get_event_id(self, payload):
+        return payload['pull_request']['number']
+
+
 class GithubRequestEventHandler(object):
 
     EVENT_MAP = {
         Issues.EVENT_NAME: Issues,
         PullRequests.EVENT_NAME: PullRequests,
         PullRequestsComment.EVENT_NAME: PullRequestsComment,
-        IssueComment.EVENT_NAME: IssueComment
+        IssueComment.EVENT_NAME: IssueComment,
+        PullRequestsReview.EVENT_NAME: PullRequestsReview,
     }
 
     def __init__(self, request):
