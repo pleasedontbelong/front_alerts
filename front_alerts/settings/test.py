@@ -11,9 +11,15 @@ MESSAGES_ROUTING = {
         "github_repo": "",
         "github_owner": "",
     },
-    "frontend": {
-        "github_labels": [ANY],
-        "slack_channels": ["#ops-playground"],
+    "team1": {
+        "github_labels": ["team1"],
+        "slack_channels": ["#team1"],
+        "review_request_labels": ["test Ready for review"],
+        "sentry_projects": [ANY]
+    },
+    "team2": {
+        "github_labels": ["team2"],
+        "slack_channels": ["#team2"],
         "review_request_labels": ["test Ready for review"],
         "sentry_projects": [ANY]
     }
@@ -42,3 +48,5 @@ LOGGING = {
         },
     }
 }
+
+SLACK_WEBHOOK = "https://hooks.slack.com/services/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"
