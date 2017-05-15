@@ -91,6 +91,14 @@ class PullRequests(EventHandler):
                 number=payload['pull_request']['number'],
                 title=payload['pull_request']['title'],
             )
+        if action == "review_requested":
+            reviewers = map(lambda x: x['login'], payload['pull_request']['requested_reviewers'])
+            return u":speech_balloon: {reviewers} a review was requested for <{pr_url}|#{number} {title}>".format(
+                reviewers=",".join(reviewers),
+                pr_url=payload['pull_request']['html_url'],
+                number=payload['pull_request']['number'],
+                title=payload['pull_request']['title'],
+            )
 
         return ""
 
@@ -99,10 +107,7 @@ class PullRequests(EventHandler):
 
     def get_attachments(self, payload, route_config):
         action = payload['action']
-        if action in ('labeled', 'unlabeled'):
-            return None
-
-        if action == "synchronize":
+        if action in ('labeled', 'unlabeled', 'synchronize', 'review_requested'):
             return None
 
         plain = u"Pull Request #{number} {action} {pr_url}: {title}\n{content}".format(
