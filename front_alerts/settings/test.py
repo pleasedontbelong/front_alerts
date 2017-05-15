@@ -34,7 +34,7 @@ MESSAGES_ROUTING = {
     },
     "test": {
         "github_labels": [ANY],
-        "slack_channels": ["#test"],
+        "slack_channels": ["#general"],
         "review_request_labels": ["test Ready for review"],
         "sentry_projects": [ANY]
     }
@@ -66,4 +66,3 @@ LOGGING = {
 }
 
 # pleasedontbelong.slack
-SLACK_WEBHOOK = "https://hooks.slack.com/services/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"

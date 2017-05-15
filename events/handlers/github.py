@@ -47,7 +47,7 @@ class Issues(EventHandler):
         return [{
             "author_name": u"Issue {}".format(payload['action']),
             "fallback": plain,
-            "color": SLACK_COLORS.WARNING,
+            "color": SLACK_COLORS.WARNING.display,
             "title": payload['issue']['title'],
             "title_link": payload['issue']['html_url'],
             "text": payload['issue']['body'][:140],
@@ -120,7 +120,7 @@ class PullRequests(EventHandler):
         return [{
             "author_name": u"Pull Request {}".format(action),
             "fallback": plain,
-            "color": SLACK_COLORS.PRIMARY,
+            "color": SLACK_COLORS.PRIMARY.display,
             "title": payload['pull_request']['title'],
             "title_link": payload['pull_request']['html_url'],
             "text": payload['pull_request']['body'][:140],
@@ -172,7 +172,7 @@ class PullRequestsComment(EventHandler):
             ),
             "author_link": payload['pull_request']['html_url'],
             "fallback": plain,
-            "color": SLACK_COLORS.INFO,
+            "color": SLACK_COLORS.INFO.display,
             "title": payload['comment']['path'],
             "title_link": payload['comment']['html_url'],
             "text": payload['comment']['body'][:140],

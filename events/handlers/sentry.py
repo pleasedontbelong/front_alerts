@@ -15,7 +15,7 @@ class SentryErrorEvent(EventHandler):
             "author_name": plain,
             "author_link": payload["url"],
             "fallback": plain,
-            "color": SLACK_COLORS.DANGER,
+            "color": SLACK_COLORS.DANGER.display,
             "title": payload["culprit"],
             "text": ":scream: " + payload["message"],
         }]

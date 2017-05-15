@@ -18,11 +18,12 @@ class JenkinsBuildFinishedEvent(EventHandler):
             issue['title'],
             payload['build']['status']
         )
+        color = SLACK_COLORS.DANGER.display if payload['build']['status'] == "FAILURE" else SLACK_COLORS.SUCCESS.display
         return [{
             "author_name": "Jenkins Job {}".format(payload['build']['status']),
             "author_link": payload['build']['full_url'],
             "fallback": plain,
-            "color": SLACK_COLORS.DANGER if payload['build']['status'] == "FAILURE" else SLACK_COLORS.SUCCESS,
+            "color": color,
             "title": issue['title'],
             "title_link": issue['pull_request']['html_url'],
             "pretext": "@{} jenkins finished your PR's tests".format(issue['user']['login'])
