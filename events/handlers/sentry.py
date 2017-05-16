@@ -1,5 +1,6 @@
 import json
 from .core import EventHandler
+from events.constants import SLACK_COLORS
 
 
 class SentryErrorEvent(EventHandler):
@@ -14,7 +15,7 @@ class SentryErrorEvent(EventHandler):
             "author_name": plain,
             "author_link": payload["url"],
             "fallback": plain,
-            "color": "#c0392b",
+            "color": SLACK_COLORS.DANGER.display,
             "title": payload["culprit"],
             "text": ":scream: " + payload["message"],
         }]
