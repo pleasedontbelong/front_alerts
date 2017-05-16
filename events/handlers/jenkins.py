@@ -1,3 +1,4 @@
+import re
 import json
 from front_alerts import github
 from .core import EventHandler
@@ -32,13 +33,19 @@ class JenkinsBuildFinishedEvent(EventHandler):
     def get_labels(self, payload, route_config):
         if not self._labels:
             issue = self.get_issue(payload, route_config)
+            if not issue:
+                return []
             self._labels = github.extract_labels(issue)
         return self._labels
 
     def get_issue(self, payload, route_config):
         if not self._issue:
-            pr_id = payload['build']['parameters']['ghprbPullId']
-            self._issue = github.get_issue(pr_id, route_config)
+            branch = payload['build']['scm']['branch']
+            pr_search = re.search("origin/(\d+).*", branch, re.IGNORECASE)
+            if not pr_search:
+                return None
+            self.pr_id = pr_search.group(1)
+            self._issue = github.get_issue(self.pr_id, route_config)
         return self._issue
 
     def should_send(self, payload, route_config):
@@ -47,7 +54,7 @@ class JenkinsBuildFinishedEvent(EventHandler):
         return any([label for label in pr_labels if label in trigger_labels])
 
     def get_event_id(self, payload):
-        return payload['build']['parameters']['ghprbPullId']
+        return self.pr_id
 
     def get_event_name(self, payload):
         return u"jenkins_build"
