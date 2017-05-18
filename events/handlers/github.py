@@ -296,6 +296,42 @@ class PullRequestsReview(EventHandler):
         return payload['pull_request']['number']
 
 
+class ReleaseTag(EventHandler):
+
+    EVENT_NAME = "release"
+
+    def should_send(self, payload, route_config):
+        return 'release' in payload
+
+    def get_attachments(self, payload, route_config):
+        tag = payload['release']['tag_name']
+
+        if payload['release']['name'] and (
+           payload['release']['name'] != payload['release']['tag_name']):
+
+            tag += ' (aka "{name}")'.format(name=payload['release']['name'])
+
+        message = '{project} {tag} has been released'.format(
+                  project=payload['repository']['name'], tag=tag)
+        url = payload['release']['html_url']
+
+        return [{
+            'color': '#007ab8',
+            'fallback': '{message} - {url}'.format(message=message, url=url),
+
+            'title': message,
+            'title_link': url,
+
+            'footer': 'Published by @{username} at {date}'.format(
+                username=payload['release']['author']['login'],
+                date=payload['release']['published_at']),
+            'footer_icon': payload['release']['author']['avatar_url'],
+        }]
+
+    def get_event_id(self, payload):
+        return payload['release']['tag_name']
+
+
 class GithubRequestEventHandler(object):
 
     EVENT_MAP = {
@@ -304,6 +340,7 @@ class GithubRequestEventHandler(object):
         PullRequestsComment.EVENT_NAME: PullRequestsComment,
         IssueComment.EVENT_NAME: IssueComment,
         PullRequestsReview.EVENT_NAME: PullRequestsReview,
+        ReleaseTag.EVENT_NAME: ReleaseTag,
     }
 
     def __init__(self, request):
